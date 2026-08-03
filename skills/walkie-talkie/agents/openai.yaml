@@ -1,0 +1,7 @@
+interface:
+  display_name: "Walkie-Talkie"
+  short_description: "Audit completed features through real user journeys"
+  icon_small: "./assets/icon.svg"
+  icon_large: "./assets/icon.svg"
+  brand_color: "#172554"
+  default_prompt: "Use $walkie-talkie to audit this completed feature from every affected actor perspective."

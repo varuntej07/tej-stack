@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">Walkie-Talkie</title>
+  <desc id="desc">Two speech bubbles connected by an audit path</desc>
+  <rect width="256" height="256" rx="52" fill="#172554"/>
+  <path d="M54 57h92a24 24 0 0 1 24 24v35a24 24 0 0 1-24 24H98l-28 22v-22H54a24 24 0 0 1-24-24V81a24 24 0 0 1 24-24Z" fill="#60A5FA"/>
+  <path d="M110 119h92a24 24 0 0 1 24 24v32a24 24 0 0 1-24 24h-16v22l-28-22h-48a24 24 0 0 1-24-24v-32a24 24 0 0 1 24-24Z" fill="#F8FAFC"/>
+  <path d="M64 98h72M120 159h72" stroke="#172554" stroke-width="12" stroke-linecap="round"/>
+</svg>
