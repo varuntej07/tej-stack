@@ -1,0 +1,4 @@
+interface:
+  display_name: "Trace Failure"
+  short_description: "Trace failures from actor to impact"
+  default_prompt: "Use $trace-failure to explain this failure from its initiating actor through its observable impact before proposing a fix."

@@ -15,25 +15,37 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$sourceDirectory = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot "..\skills\walkie-talkie"))
-$sourceSkill = Join-Path $sourceDirectory "SKILL.md"
+$sourceDirectory = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot "..\plugins\tej-stack\skills"))
+$skills = @(Get-ChildItem -LiteralPath $sourceDirectory -Directory | Where-Object {
+    Test-Path -LiteralPath (Join-Path $_.FullName "SKILL.md") -PathType Leaf
+} | Sort-Object Name)
 
-function Test-WalkieTalkieSkill {
-    param([Parameter(Mandatory)][string]$SkillFile)
+if ($skills.Count -eq 0) {
+    throw "No bundled skills found."
+}
+if ($Scope -eq "user" -and [string]::IsNullOrWhiteSpace($HomeDirectory)) {
+    throw "No user home directory is available."
+}
+
+function Test-ExpectedSkill {
+    param(
+        [Parameter(Mandatory)][string]$SkillFile,
+        [Parameter(Mandatory)][string]$ExpectedName
+    )
     if (-not (Test-Path -LiteralPath $SkillFile -PathType Leaf)) {
         return $false
     }
     $lines = @(Get-Content -LiteralPath $SkillFile)
-    if ($lines.Count -lt 3 -or $lines[0] -ne '---') {
+    if ($lines.Count -lt 3 -or $lines[0] -ne "---") {
         return $false
     }
     $nameCount = 0
     for ($index = 1; $index -lt $lines.Count; $index++) {
-        if ($lines[$index] -eq '---') {
+        if ($lines[$index] -eq "---") {
             return $nameCount -eq 1
         }
-        if ($lines[$index] -match '^name:\s*') {
-            if ($lines[$index] -ne 'name: walkie-talkie') {
+        if ($lines[$index] -match "^name:\s*") {
+            if ($lines[$index] -ne "name: $ExpectedName") {
                 return $false
             }
             $nameCount++
@@ -42,50 +54,63 @@ function Test-WalkieTalkieSkill {
     return $false
 }
 
-if (-not (Test-WalkieTalkieSkill -SkillFile $sourceSkill)) {
-    throw "The bundled walkie-talkie skill is missing or invalid."
-}
-if ($Scope -eq "user" -and [string]::IsNullOrWhiteSpace($HomeDirectory)) {
-    throw "No user home directory is available."
-}
-
 function Get-Destination {
-    param([Parameter(Mandatory)][ValidateSet("codex", "claude")][string]$Agent)
-    $base = if ($Scope -eq "user") { $HomeDirectory } else { $ProjectRoot }
-    $relative = if ($Agent -eq "codex") {
-        ".agents\skills\walkie-talkie"
-    } else {
-        ".claude\skills\walkie-talkie"
+    param(
+        [Parameter(Mandatory)][ValidateSet("codex", "claude")][string]$Agent,
+        [Parameter(Mandatory)][string]$SkillName
+    )
+    if ($Scope -eq "user") {
+        $relative = if ($Agent -eq "codex") {
+            ".codex\skills\$SkillName"
+        } else {
+            ".claude\skills\$SkillName"
+        }
+        return [IO.Path]::GetFullPath((Join-Path $HomeDirectory $relative))
     }
-    return [IO.Path]::GetFullPath((Join-Path $base $relative))
+    $relative = if ($Agent -eq "codex") {
+        ".agents\skills\$SkillName"
+    } else {
+        ".claude\skills\$SkillName"
+    }
+    return [IO.Path]::GetFullPath((Join-Path $ProjectRoot $relative))
 }
 
 function Test-Destination {
-    param([Parameter(Mandatory)][string]$Destination)
-    if (-not (Test-Path -LiteralPath $Destination)) {
+    param(
+        [Parameter(Mandatory)][string]$Agent,
+        [Parameter(Mandatory)][System.IO.DirectoryInfo]$Skill
+    )
+    $sourceSkill = Join-Path $Skill.FullName "SKILL.md"
+    if (-not (Test-ExpectedSkill -SkillFile $sourceSkill -ExpectedName $Skill.Name)) {
+        throw "Bundled skill is missing or invalid: $($Skill.Name)"
+    }
+    $destination = Get-Destination -Agent $Agent -SkillName $Skill.Name
+    if (-not (Test-Path -LiteralPath $destination)) {
         return
     }
-    $installedSkill = Join-Path $Destination "SKILL.md"
-    if (-not (Test-WalkieTalkieSkill -SkillFile $installedSkill)) {
-        throw "Refusing to overwrite a different installation at: $Destination"
+    if (-not (Test-ExpectedSkill -SkillFile (Join-Path $destination "SKILL.md") -ExpectedName $Skill.Name)) {
+        throw "Refusing to overwrite a different installation at: $destination"
     }
     if (-not $Update) {
-        throw "walkie-talkie is already installed at: $Destination. Re-run with -Update to replace this same skill."
+        throw "$($Skill.Name) is already installed at: $destination. Re-run with -Update to replace this same skill."
     }
 }
 
 function Install-One {
-    param([Parameter(Mandatory)][ValidateSet("codex", "claude")][string]$Agent)
-    $destination = Get-Destination -Agent $Agent
+    param(
+        [Parameter(Mandatory)][string]$Agent,
+        [Parameter(Mandatory)][System.IO.DirectoryInfo]$Skill
+    )
+    $destination = Get-Destination -Agent $Agent -SkillName $Skill.Name
     $parent = Split-Path -Parent $destination
     [void](New-Item -ItemType Directory -Path $parent -Force)
-    $stage = Join-Path $parent (".walkie-talkie.install." + [IO.Path]::GetRandomFileName())
+    $stage = Join-Path $parent (".tej-stack.install." + [IO.Path]::GetRandomFileName())
     [void](New-Item -ItemType Directory -Path $stage)
 
     try {
-        Get-ChildItem -Force -LiteralPath $sourceDirectory | Copy-Item -Destination $stage -Recurse -Force
+        Get-ChildItem -Force -LiteralPath $Skill.FullName | Copy-Item -Destination $stage -Recurse -Force
         if (Test-Path -LiteralPath $destination) {
-            $backup = Join-Path $parent (".walkie-talkie.backup." + [IO.Path]::GetRandomFileName())
+            $backup = Join-Path $parent (".tej-stack.backup." + [IO.Path]::GetRandomFileName())
             Move-Item -LiteralPath $destination -Destination $backup
             try {
                 Move-Item -LiteralPath $stage -Destination $destination
@@ -105,15 +130,19 @@ function Install-One {
         }
     }
 
-    $invocation = if ($Agent -eq "codex") { '$walkie-talkie' } else { '/walkie-talkie' }
-    Write-Output "Installed walkie-talkie for $Agent at: $destination"
+    $invocation = if ($Agent -eq "codex") { '$' + $Skill.Name } else { '/' + $Skill.Name }
+    Write-Output "Installed $($Skill.Name) for $Agent at: $destination"
     Write-Output "Invoke it with: $invocation"
 }
 
 $agents = if ($Target -eq "both") { @("codex", "claude") } else { @($Target) }
 foreach ($agent in $agents) {
-    Test-Destination -Destination (Get-Destination -Agent $agent)
+    foreach ($skill in $skills) {
+        Test-Destination -Agent $agent -Skill $skill
+    }
 }
 foreach ($agent in $agents) {
-    Install-One -Agent $agent
+    foreach ($skill in $skills) {
+        Install-One -Agent $agent -Skill $skill
+    }
 }

@@ -1,0 +1,20 @@
+{
+  "name": "tej-stack",
+  "interface": {
+    "displayName": "Tej Stack"
+  },
+  "plugins": [
+    {
+      "name": "tej-stack",
+      "source": {
+        "source": "local",
+        "path": "./plugins/tej-stack"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

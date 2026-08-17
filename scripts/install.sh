@@ -49,65 +49,67 @@ if [ "$scope" = "user" ] && [ -z "$home_dir" ]; then
 fi
 
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-source_dir=$(CDPATH= cd -- "$script_dir/../skills/walkie-talkie" && pwd)
-source_skill="$source_dir/SKILL.md"
+source_dir=$(CDPATH= cd -- "$script_dir/../plugins/tej-stack/skills" && pwd)
 
-is_walkie_talkie_skill() {
+skill_names=""
+for skill_dir in "$source_dir"/*; do
+  [ -d "$skill_dir" ] || continue
+  [ -f "$skill_dir/SKILL.md" ] || continue
+  skill_name=$(basename -- "$skill_dir")
+  skill_names="${skill_names}${skill_name}
+"
+done
+
+[ -n "$skill_names" ] || { echo "Error: no bundled skills found." >&2; exit 2; }
+
+is_expected_skill() {
   skill_file=$1
+  expected=$2
   [ -f "$skill_file" ] || return 1
-  awk '
-    NR == 1 {
-      if ($0 != "---") exit 1
-      next
-    }
-    $0 == "---" {
-      closed = 1
-      exit name_count == 1 ? 0 : 1
-    }
+  awk -v expected="$expected" '
+    NR == 1 { if ($0 != "---") exit 1; next }
+    $0 == "---" { closed = 1; exit name_count == 1 ? 0 : 1 }
     /^name:[[:space:]]*/ {
-      if ($0 == "name: walkie-talkie") {
-        name_count++
-      } else {
-        exit 1
-      }
+      if ($0 == "name: " expected) name_count++
+      else exit 1
     }
-    END {
-      if (!closed) exit 1
-    }
+    END { if (!closed) exit 1 }
   ' "$skill_file"
 }
 
-if ! is_walkie_talkie_skill "$source_skill"; then
-  echo "Error: the bundled walkie-talkie skill is missing or invalid." >&2
-  exit 2
-fi
-
 destination_for() {
   agent=$1
+  skill_name=$2
   if [ "$scope" = "user" ]; then
     case "$agent" in
-      codex) printf '%s\n' "$home_dir/.agents/skills/walkie-talkie" ;;
-      claude) printf '%s\n' "$home_dir/.claude/skills/walkie-talkie" ;;
+      codex) printf '%s\n' "$home_dir/.codex/skills/$skill_name" ;;
+      claude) printf '%s\n' "$home_dir/.claude/skills/$skill_name" ;;
     esac
   else
     case "$agent" in
-      codex) printf '%s\n' "$project_root/.agents/skills/walkie-talkie" ;;
-      claude) printf '%s\n' "$project_root/.claude/skills/walkie-talkie" ;;
+      codex) printf '%s\n' "$project_root/.agents/skills/$skill_name" ;;
+      claude) printf '%s\n' "$project_root/.claude/skills/$skill_name" ;;
     esac
   fi
 }
 
 preflight() {
-  dest=$1
-  if [ ! -e "$dest" ]; then
-    return 0
+  agent=$1
+  skill_name=$2
+  source_skill="$source_dir/$skill_name/SKILL.md"
+  dest=$(destination_for "$agent" "$skill_name")
+
+  if ! is_expected_skill "$source_skill" "$skill_name"; then
+    echo "Error: bundled skill is missing or invalid: $skill_name" >&2
+    return 2
   fi
-  if ! is_walkie_talkie_skill "$dest/SKILL.md"; then
+  [ -e "$dest" ] || return 0
+  if ! is_expected_skill "$dest/SKILL.md" "$skill_name"; then
     echo "Error: refusing to overwrite a different installation at: $dest" >&2
     return 4
   fi
   if [ "$update" != "true" ]; then
-    echo "Error: walkie-talkie is already installed at: $dest" >&2
+    echo "Error: $skill_name is already installed at: $dest" >&2
     echo "Re-run with --update to replace this same skill." >&2
     return 3
   fi
@@ -115,26 +117,21 @@ preflight() {
 
 install_one() {
   agent=$1
-  dest=$(destination_for "$agent")
+  skill_name=$2
+  source_skill_dir="$source_dir/$skill_name"
+  dest=$(destination_for "$agent" "$skill_name")
   parent=$(dirname -- "$dest")
   mkdir -p -- "$parent"
-  stage=$(mktemp -d "$parent/.walkie-talkie.install.XXXXXX") || return 1
-  if ! cp -R "$source_dir/." "$stage/"; then
+  stage=$(mktemp -d "$parent/.tej-stack.install.XXXXXX") || return 1
+  if ! cp -R "$source_skill_dir/." "$stage/"; then
     rm -rf -- "$stage"
     return 1
   fi
 
   if [ -e "$dest" ]; then
-    backup="$parent/.walkie-talkie.backup.$$"
-    if [ -e "$backup" ]; then
-      echo "Error: safe backup path already exists: $backup" >&2
-      rm -rf -- "$stage"
-      return 1
-    fi
-    if ! mv -- "$dest" "$backup"; then
-      rm -rf -- "$stage"
-      return 1
-    fi
+    backup="$parent/.tej-stack.backup.$$.$skill_name"
+    [ ! -e "$backup" ] || { echo "Error: backup path exists: $backup" >&2; rm -rf -- "$stage"; return 1; }
+    mv -- "$dest" "$backup"
     if mv -- "$stage" "$dest"; then
       rm -rf -- "$backup"
     else
@@ -147,10 +144,10 @@ install_one() {
   fi
 
   case "$agent" in
-    codex) invocation='$walkie-talkie' ;;
-    claude) invocation='/walkie-talkie' ;;
+    codex) invocation="\$$skill_name" ;;
+    claude) invocation="/$skill_name" ;;
   esac
-  echo "Installed walkie-talkie for $agent at: $dest"
+  echo "Installed $skill_name for $agent at: $dest"
   echo "Invoke it with: $invocation"
 }
 
@@ -162,8 +159,15 @@ case "$target" in
 esac
 
 for agent in $agents; do
-  preflight "$(destination_for "$agent")"
+  printf '%s' "$skill_names" | while IFS= read -r skill_name; do
+    [ -n "$skill_name" ] || continue
+    preflight "$agent" "$skill_name"
+  done
 done
+
 for agent in $agents; do
-  install_one "$agent"
+  printf '%s' "$skill_names" | while IFS= read -r skill_name; do
+    [ -n "$skill_name" ] || continue
+    install_one "$agent" "$skill_name"
+  done
 done

@@ -1,0 +1,14 @@
+{
+  "name": "tej-stack",
+  "owner": {
+    "name": "Varun Tej",
+    "url": "https://github.com/varuntej07"
+  },
+  "plugins": [
+    {
+      "name": "tej-stack",
+      "source": "./plugins/tej-stack",
+      "description": "Practical, evidence-first skills for solo founders building and shipping startups with AI coding agents."
+    }
+  ]
+}

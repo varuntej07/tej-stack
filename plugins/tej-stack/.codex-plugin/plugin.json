@@ -1,0 +1,28 @@
+{
+  "name": "tej-stack",
+  "version": "0.1.0",
+  "description": "Practical, evidence-first skills for solo founders building and shipping startups with AI coding agents.",
+  "author": {
+    "name": "Varun Tej",
+    "url": "https://github.com/varuntej07"
+  },
+  "homepage": "https://github.com/varuntej07/tej-stack",
+  "repository": "https://github.com/varuntej07/tej-stack",
+  "license": "MIT",
+  "keywords": ["founders", "startups", "debugging", "product-quality", "agent-skills"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Tej Stack",
+    "shortDescription": "Practical workflows for solo founders",
+    "longDescription": "Focused skills for tracing failures and auditing completed product features with evidence.",
+    "developerName": "Varun Tej",
+    "category": "Productivity",
+    "capabilities": ["Analysis"],
+    "websiteURL": "https://github.com/varuntej07/tej-stack",
+    "defaultPrompt": [
+      "Audit this completed feature before I ship it.",
+      "Trace this failure from the real actor to its impact."
+    ],
+    "brandColor": "#172554"
+  }
+}
