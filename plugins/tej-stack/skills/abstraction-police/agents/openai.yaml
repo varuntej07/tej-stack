@@ -1,0 +1,4 @@
+interface:
+  display_name: "Abstraction Police"
+  short_description: "Find nearly-duplicated abstractions and their drift"
+  default_prompt: "Use $abstraction-police to sweep this codebase for nearly-duplicated abstractions, drifted contracts, and premature abstractions, and report ranked findings with file and line evidence."
