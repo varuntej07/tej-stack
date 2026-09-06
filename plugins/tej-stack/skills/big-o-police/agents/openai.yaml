@@ -1,0 +1,4 @@
+interface:
+  display_name: "Big-O Police"
+  short_description: "Find and prove real algorithmic and data-structure wins"
+  default_prompt: "Use $big-o-police to audit this codebase for places where a different data structure or algorithm would measurably reduce time or space cost, prove each finding with a complexity argument and a verification step, and list what you deliberately refused."
