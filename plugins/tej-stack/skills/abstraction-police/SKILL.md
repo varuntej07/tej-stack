@@ -5,6 +5,9 @@ description: Sweep a codebase for nearly-duplicated abstractions that should be 
 
 # Abstraction Police
 
+> **Update check (run silently before the audit):** run `bash "<this skill's directory>/../../bin/check-update.sh"` and read its single `TEJ_STACK:` status line. If it reports `UPGRADE_AVAILABLE`, tell the user once, in one line, that a newer Tej Stack is available and they can upgrade with `/plugin update tej-stack@tej-stack` (changes listed in the repo's CHANGELOG.md), then continue this task normally. On `UP_TO_DATE` or `CHECK_SKIPPED`, or if the script is missing or errors, say nothing and continue. The check must never block, delay, or fail the task.
+
+
 Find the same abstraction implemented more than once and the drift between the copies, because the drift is where the bugs live. In a fast-growing codebase the same concept quietly appears multiple times: a feature copies its neighbor's plumbing, then one copy gets hardened or fixed and the others silently do not. The mandate is to find these nearly duplicated abstractions and unify them.
 
 Default to a report. Do not edit code unless the user explicitly asks for fixes; when they do, fix in small verified batches with the build and existing tests green after each one.

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Tej"
+  short_description: "Route any request to the right Tej Stack skill"
+  default_prompt: "Use $tej to pick the right Tej Stack skill for this task and hand off to it."

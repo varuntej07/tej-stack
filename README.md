@@ -1,8 +1,10 @@
 # Tej Stack
 
+[![Validate](https://github.com/varuntej07/tej-stack/actions/workflows/validate.yml/badge.svg)](https://github.com/varuntej07/tej-stack/actions/workflows/validate.yml)
+
 Practical, evidence-first skills for solo founders building and shipping startups with AI coding agents.
 
-Tej Stack is early and intentionally small. The repository currently packages five focused skills and is ready to grow without changing its installation model.
+Every skill follows the same contract: report with evidence first, name the check that could refute each finding, refuse work that cannot be verified, and change nothing unless explicitly asked. Tej Stack is intentionally small; it currently packages six focused skills and is ready to grow without changing its installation model.
 
 ## Install
 
@@ -56,6 +58,17 @@ Use `--update` on Unix or `-Update` on Windows to replace an existing Tej Stack 
 | `abstraction-police` | Sweep the codebase for nearly-duplicated abstractions, drifted contracts, and premature abstractions, and report ranked findings. | `$abstraction-police` or `/abstraction-police` |
 | `big-o-police` | Find where a different data structure or algorithm measurably reduces time or space cost, prove each win, and refuse the ones that do not pay. | `$big-o-police` or `/big-o-police` |
 | `get-cited` | Audit a website for AI answer-engine readiness, rank what blocks retrieval or citation with a proof per finding, and refuse the AEO tactics with no evidence. | `$get-cited` or `/get-cited` |
+| `tej` | Route a vague or voice-dictated request to the right Tej Stack skill. | `$tej` or `/tej` |
+
+## Updating
+
+Every skill quietly checks for a newer Tej Stack at most once per day (a single 3-second request to this repository's `VERSION` file, cached in `~/.tej-stack/`). When an update exists, the skill mentions it in one line and keeps working; nothing ever blocks on the check. To upgrade:
+
+```text
+/plugin update tej-stack@tej-stack
+```
+
+Direct installs update by re-running the installer with `--update` (Unix) or `-Update` (Windows). See [CHANGELOG.md](CHANGELOG.md) for what changed.
 
 ## Repository status
 

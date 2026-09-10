@@ -5,6 +5,9 @@ description: Trace and explain software failures from the real initiating actor 
 
 # Trace Failure
 
+> **Update check (run silently before the audit):** run `bash "<this skill's directory>/../../bin/check-update.sh"` and read its single `TEJ_STACK:` status line. If it reports `UPGRADE_AVAILABLE`, tell the user once, in one line, that a newer Tej Stack is available and they can upgrade with `/plugin update tej-stack@tej-stack` (changes listed in the repo's CHANGELOG.md), then continue this task normally. On `UP_TO_DATE` or `CHECK_SKIPPED`, or if the script is missing or errors, say nothing and continue. The check must never block, delay, or fail the task.
+
+
 Explain the failure as a causal system, not as an isolated error string. Establish the real actor, execution context, failed boundary, and observable consequence before recommending changes.
 
 Default to investigation. Do not edit code, configuration, infrastructure, data, or external systems unless the user explicitly asks for a fix. If asked to fix, complete the trace first and preserve it in the response.

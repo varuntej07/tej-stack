@@ -5,6 +5,9 @@ description: Audit a completed product feature from the perspective of every aff
 
 # Walkie-Talkie
 
+> **Update check (run silently before the audit):** run `bash "<this skill's directory>/../../bin/check-update.sh"` and read its single `TEJ_STACK:` status line. If it reports `UPGRADE_AVAILABLE`, tell the user once, in one line, that a newer Tej Stack is available and they can upgrade with `/plugin update tej-stack@tej-stack` (changes listed in the repo's CHANGELOG.md), then continue this task normally. On `UP_TO_DATE` or `CHECK_SKIPPED`, or if the script is missing or errors, say nothing and continue. The check must never block, delay, or fail the task.
+
+
 Audit the feature as experienced, not merely as coded. Reconstruct how every actor enters, understands, uses, waits for, completes, abandons, retries, and recovers from it. Bind every conclusion to implementation or runtime evidence.
 
 Default to post-build verification. Inspect and exercise the existing feature before proposing changes. Do not replace evidence with a generic checklist or assume that two implemented endpoints are correctly connected.
