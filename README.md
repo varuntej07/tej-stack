@@ -2,7 +2,7 @@
 
 Practical, evidence-first skills for solo founders building and shipping startups with AI coding agents.
 
-Tej Stack is early and intentionally small. The repository currently packages four focused skills and is ready to grow without changing its installation model.
+Tej Stack is early and intentionally small. The repository currently packages five focused skills and is ready to grow without changing its installation model.
 
 ## Install
 
@@ -55,6 +55,7 @@ Use `--update` on Unix or `-Update` on Windows to replace an existing Tej Stack 
 | `trace-failure` | Explain a failure from its real initiating actor through its technical and observable impact. | `$trace-failure` or `/trace-failure` |
 | `abstraction-police` | Sweep the codebase for nearly-duplicated abstractions, drifted contracts, and premature abstractions, and report ranked findings. | `$abstraction-police` or `/abstraction-police` |
 | `big-o-police` | Find where a different data structure or algorithm measurably reduces time or space cost, prove each win, and refuse the ones that do not pay. | `$big-o-police` or `/big-o-police` |
+| `get-cited` | Audit a website for AI answer-engine readiness, rank what blocks retrieval or citation with a proof per finding, and refuse the AEO tactics with no evidence. | `$get-cited` or `/get-cited` |
 
 ## Repository status
 

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Get Cited"
+  short_description: "Make a website the source AI answers cite, with evidence"
+  default_prompt: "Use $get-cited to audit this website for AI answer-engine readiness: verify crawlers can fetch and read the real content, rank what blocks retrieval or citation, name the check that proves each finding, and list the tactics you deliberately refused."
