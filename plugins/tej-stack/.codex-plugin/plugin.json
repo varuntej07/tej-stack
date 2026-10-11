@@ -1,6 +1,6 @@
 {
   "name": "tej-stack",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Practical, evidence-first skills for solo founders building and shipping startups with AI coding agents.",
   "author": {
     "name": "Varun Tej",
@@ -14,7 +14,7 @@
   "interface": {
     "displayName": "Tej Stack",
     "shortDescription": "Practical workflows for solo founders",
-    "longDescription": "Focused skills for tracing failures and auditing completed product features with evidence.",
+    "longDescription": "Focused skills for tracing failures, auditing completed product features, and mapping code or concepts into clickable flow diagrams, all with evidence.",
     "developerName": "Varun Tej",
     "category": "Productivity",
     "capabilities": ["Analysis"],

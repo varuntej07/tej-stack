@@ -2,6 +2,11 @@
 
 All notable changes to Tej Stack. Versions follow semantic versioning; the current version lives in `VERSION`.
 
+## 0.6.0 (2026-10-10)
+
+- New `flowmap` skill: map a code file, a repo flow, or a concept into a Figma-style block diagram page. Clicking a block opens its file and line, signature, inputs and outputs, config, code excerpt, gotchas, and official docs. Ships a stdlib-only repo scanner, a graph validator and builder, and a self-contained canvas template that runs as a local file or a claude.ai Artifact.
+- The `tej` router now sends map and diagram requests to `flowmap`.
+
 ## 0.5.0 (2026-09-10)
 
 - New `tej` router skill: routes vague or voice-dictated invocations (tej stack, tay stack, tedge stack) to the right specialist skill.
