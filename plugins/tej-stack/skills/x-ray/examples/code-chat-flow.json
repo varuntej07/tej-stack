@@ -1,0 +1,209 @@
+{
+  "title": "Chat request flow",
+  "mode": "code",
+  "subject": "POST /api/chat in a sample FastAPI backend",
+  "summary": "A signed-in user sends a message. Middleware verifies the JWT, the route embeds the message, pulls the closest memories from Postgres (pgvector), and streams a Claude reply back as server-sent events.\n\nWhen the stream ends, the full reply is saved to the messages table.",
+  "root": "client",
+  "groups": [
+    { "id": "edge", "label": "Client and middleware" },
+    { "id": "api", "label": "API layer" },
+    { "id": "rag", "label": "Retrieval" },
+    { "id": "ext", "label": "External services" }
+  ],
+  "context": { "Framework": "FastAPI + Starlette", "Entry file": "app/main.py", "Route prefix": "/api" },
+  "limits": ["Static read of the code only. No runtime values were captured.", "Prompt caching and retries are not implemented in this sample."],
+  "nodes": [
+    {
+      "id": "client", "title": "POST /api/chat", "subtitle": "App sends message + JWT", "kind": "entry", "group": "edge", "step": 1,
+      "metadata": {
+        "summary": "Entry point. The mobile app posts a JSON body with the message and session id, plus a Bearer token.",
+        "inputs": [
+          { "name": "Authorization", "type": "header", "desc": "Bearer <JWT>" },
+          { "name": "body", "type": "ChatRequest", "example": { "message": "what did I say about my trip?", "session_id": "s_81f2" } }
+        ],
+        "location": { "file": "app/main.py", "line": 7 },
+        "notes": ["The router is mounted with prefix /api, so the route path /chat becomes /api/chat."],
+        "confidence": "verified"
+      }
+    },
+    {
+      "id": "auth", "title": "AuthMiddleware.dispatch()", "subtitle": "Verify Bearer token", "kind": "middleware", "group": "edge", "step": 2,
+      "metadata": {
+        "summary": "Runs before every route. It strips the Bearer prefix, decodes the JWT, and stores the claims on request.state.user. A bad token returns 401 at once.",
+        "location": { "file": "app/middleware/auth.py", "line": 10, "end_line": 16, "symbol": "AuthMiddleware.dispatch" },
+        "signature": "async def dispatch(self, request, call_next)",
+        "outputs": [{ "name": "request.state.user", "type": "dict", "desc": "Decoded JWT claims, for example sub" }],
+        "calls": [{ "id": "verify", "name": "verify_token()" }],
+        "code": "    async def dispatch(self, request, call_next):\n        token = request.headers.get(\"authorization\", \"\").removeprefix(\"Bearer \")\n        try:\n            request.state.user = verify_token(token)\n        except jwt.PyJWTError:\n            return JSONResponse({\"error\": \"unauthorized\"}, status_code=401)\n        return await call_next(request)",
+        "lang": "python",
+        "gotchas": ["BaseHTTPMiddleware wraps streaming responses; heavy middleware here can delay the first SSE byte."],
+        "sources": [{ "title": "Starlette BaseHTTPMiddleware", "url": "https://www.starlette.io/middleware/#basehttpmiddleware", "kind": "docs" }],
+        "confidence": "verified"
+      }
+    },
+    {
+      "id": "verify", "title": "verify_token()", "subtitle": "HS256 JWT decode", "kind": "function", "group": "edge",
+      "metadata": {
+        "summary": "Decodes and checks the JWT signature and expiry with the shared secret.",
+        "location": { "file": "app/middleware/auth.py", "line": 19, "end_line": 20, "symbol": "verify_token" },
+        "signature": "def verify_token(token: str) -> dict",
+        "config": { "JWT_SECRET": "env, default \"dev-secret\"", "algorithms": "[\"HS256\"]" },
+        "code": "def verify_token(token: str) -> dict:\n    return jwt.decode(token, JWT_SECRET, algorithms=[\"HS256\"])",
+        "lang": "python",
+        "gotchas": ["The default \"dev-secret\" makes tokens forgeable if JWT_SECRET is not set in production."],
+        "sources": [{ "title": "PyJWT API: jwt.decode", "url": "https://pyjwt.readthedocs.io/en/stable/api.html", "kind": "docs" }],
+        "confidence": "verified"
+      }
+    },
+    {
+      "id": "route", "title": "chat_endpoint()", "subtitle": "Orchestrates one chat turn", "kind": "route", "group": "api", "step": 3,
+      "metadata": {
+        "summary": "The route handler. It reads the user from request.state, gets memory context, starts the model stream, and returns it as server-sent events.",
+        "location": { "file": "app/routes/chat.py", "line": 18, "end_line": 30, "symbol": "chat_endpoint" },
+        "signature": "async def chat_endpoint(body: ChatRequest, request: Request)",
+        "inputs": [{ "name": "body.message", "type": "str" }, { "name": "body.session_id", "type": "str" }, { "name": "request.state.user", "type": "dict" }],
+        "outputs": [{ "name": "StreamingResponse", "type": "text/event-stream" }],
+        "calls": [{ "id": "retriever", "name": "retrieve_context()" }, { "id": "llm", "name": "generate()" }, { "id": "sse", "name": "sse()" }],
+        "config": { "k": 5 },
+        "code": "async def chat_endpoint(body: ChatRequest, request: Request):\n    user = request.state.user\n    chunks = await retrieve_context(user[\"sub\"], body.message, k=5)\n    stream = generate(body.message, chunks)\n    ...\n    return StreamingResponse(sse(), media_type=\"text/event-stream\")",
+        "lang": "python",
+        "sources": [{ "title": "FastAPI StreamingResponse", "url": "https://fastapi.tiangolo.com/advanced/custom-response/#streamingresponse", "kind": "docs" }],
+        "confidence": "verified"
+      }
+    },
+    {
+      "id": "retriever", "title": "retrieve_context()", "subtitle": "Top-k memories above 0.72", "kind": "function", "group": "rag", "step": 4,
+      "metadata": {
+        "summary": "Embeds the message, queries the memories table by cosine distance, and keeps rows with score at or above MIN_SCORE.",
+        "details": "pgvector's <=> operator returns cosine distance, so the query computes score = 1 - distance. The LIMIT runs before the score filter, so the function can return fewer than k rows.",
+        "location": { "file": "app/rag/retriever.py", "line": 14, "end_line": 23, "symbol": "retrieve_context" },
+        "signature": "async def retrieve_context(user_id: str, text: str, k: int = 5) -> list[str]",
+        "inputs": [{ "name": "user_id", "type": "str", "desc": "JWT sub claim" }, { "name": "text", "type": "str" }, { "name": "k", "type": "int", "example": 5 }],
+        "outputs": [{ "name": "contents", "type": "list[str]", "desc": "0 to k memory strings" }],
+        "calls": [{ "id": "embed", "name": "embed()" }, { "id": "pool", "name": "get_pool()" }, { "id": "pg", "name": "pool.fetch" }],
+        "config": { "MIN_SCORE": 0.72 },
+        "code": "async def retrieve_context(user_id: str, text: str, k: int = 5) -> list[str]:\n    vec = await embed(text)\n    pool = await get_pool()\n    rows = await pool.fetch(\n        \"SELECT content, 1 - (embedding <=> $1) AS score FROM memories \"\n        \"WHERE user_id = $2 ORDER BY embedding <=> $1 LIMIT $3\",\n        vec, user_id, k,\n    )\n    return [r[\"content\"] for r in rows if r[\"score\"] >= MIN_SCORE]",
+        "lang": "python",
+        "gotchas": ["asyncpg needs a pgvector codec registered to send a Python list as a vector; without it the query fails."],
+        "sources": [{ "title": "pgvector: distance operators", "url": "https://github.com/pgvector/pgvector", "kind": "docs" }],
+        "confidence": "verified"
+      }
+    },
+    {
+      "id": "embed", "title": "embed()", "subtitle": "Text to 1536-d vector", "kind": "function", "group": "rag",
+      "metadata": {
+        "summary": "Calls the OpenAI embeddings endpoint for one string and returns the vector.",
+        "location": { "file": "app/rag/retriever.py", "line": 9, "end_line": 11, "symbol": "embed" },
+        "signature": "async def embed(text: str) -> list[float]",
+        "config": { "EMBED_MODEL": "text-embedding-3-small" },
+        "calls": [{ "id": "openai", "name": "embeddings.create" }],
+        "code": "async def embed(text: str) -> list[float]:\n    res = await client.embeddings.create(model=EMBED_MODEL, input=text)\n    return res.data[0].embedding",
+        "lang": "python",
+        "confidence": "verified"
+      }
+    },
+    {
+      "id": "pool", "title": "get_pool()", "subtitle": "Lazy asyncpg pool", "kind": "function", "group": "rag",
+      "metadata": {
+        "summary": "Creates one shared connection pool on first use and returns it after that.",
+        "location": { "file": "app/db/pool.py", "line": 7, "end_line": 11, "symbol": "get_pool" },
+        "config": { "DATABASE_URL": "env (required)", "min_size": 1, "max_size": 10 },
+        "notes": ["Shared by retrieve_context() and save_message()."],
+        "gotchas": ["Two first requests at the same time can both create a pool; there is no lock."],
+        "sources": [{ "title": "asyncpg connection pools", "url": "https://magicstack.github.io/asyncpg/current/api/index.html", "kind": "docs" }],
+        "confidence": "verified"
+      }
+    },
+    {
+      "id": "openai", "title": "OpenAI Embeddings API", "subtitle": "embeddings.create", "kind": "external", "group": "ext",
+      "metadata": {
+        "summary": "Hosted embedding model. One HTTPS call per chat turn.",
+        "config": { "model": "text-embedding-3-small", "auth": "env OPENAI_API_KEY" },
+        "sources": [{ "title": "Embeddings API reference", "url": "https://platform.openai.com/docs/api-reference/embeddings/create", "kind": "docs" }],
+        "confidence": "verified"
+      }
+    },
+    {
+      "id": "pg", "title": "Postgres + pgvector", "subtitle": "memories, messages tables", "kind": "datastore", "group": "ext",
+      "metadata": {
+        "summary": "Stores memory embeddings for retrieval and the chat history.",
+        "fields": { "memories": "user_id, content, embedding vector", "messages": "session_id, user_text, reply" },
+        "notes": ["ORDER BY embedding <=> $1 uses an index only if an ivfflat or hnsw index exists with cosine ops."],
+        "sources": [{ "title": "pgvector indexing", "url": "https://github.com/pgvector/pgvector#indexing", "kind": "docs" }],
+        "confidence": "inferred"
+      }
+    },
+    {
+      "id": "llm", "title": "generate()", "subtitle": "Stream Claude reply", "kind": "function", "group": "api", "step": 5,
+      "metadata": {
+        "summary": "Builds a system prompt with the memories and streams text tokens from the Messages API.",
+        "location": { "file": "app/llm/client.py", "line": 8, "end_line": 19, "symbol": "generate" },
+        "signature": "async def generate(message: str, chunks: list[str])",
+        "inputs": [{ "name": "message", "type": "str" }, { "name": "chunks", "type": "list[str]" }],
+        "outputs": [{ "name": "text", "type": "async iterator[str]" }],
+        "config": { "MODEL": "claude-sonnet-5-5", "max_tokens": 800, "temperature": 0.7 },
+        "calls": [{ "id": "claude", "name": "messages.stream" }],
+        "code": "async def generate(message: str, chunks: list[str]):\n    memories = \"\\n\".join(f\"- {c}\" for c in chunks)\n    async with client.messages.stream(\n        model=MODEL,\n        max_tokens=800,\n        temperature=0.7,\n        system=f\"{SYSTEM}\\n\\nMemories:\\n{memories}\",\n        messages=[{\"role\": \"user\", \"content\": message}],\n    ) as stream:\n        async for text in stream.text_stream:\n            yield text",
+        "lang": "python",
+        "gotchas": ["Only the current message is sent; earlier turns of the session are not included."],
+        "confidence": "verified"
+      }
+    },
+    {
+      "id": "claude", "title": "Claude Messages API", "subtitle": "Streaming completion", "kind": "model", "group": "ext",
+      "metadata": {
+        "summary": "Hosted model that streams the reply as server-sent events, which the SDK exposes as text_stream.",
+        "config": { "auth": "env ANTHROPIC_API_KEY" },
+        "sources": [{ "title": "Streaming messages", "url": "https://docs.claude.com/en/docs/build-with-claude/streaming", "kind": "docs" }],
+        "confidence": "verified"
+      }
+    },
+    {
+      "id": "sse", "title": "sse()", "subtitle": "Relay tokens, then persist", "kind": "function", "group": "api", "step": 6,
+      "metadata": {
+        "summary": "Inner generator. It forwards each token as an SSE event and collects the full reply. After the last token it saves the turn.",
+        "location": { "file": "app/routes/chat.py", "line": 23, "end_line": 28, "symbol": "chat_endpoint.sse" },
+        "outputs": [{ "name": "event", "type": "str", "example": "data: Hello\\n\\n" }],
+        "calls": [{ "id": "save", "name": "save_message()" }],
+        "code": "    async def sse():\n        reply = []\n        async for token in stream:\n            reply.append(token)\n            yield f\"data: {token}\\n\\n\"\n        await save_message(body.session_id, body.message, \"\".join(reply))",
+        "lang": "python",
+        "gotchas": ["If the client disconnects mid-stream, the generator stops and the reply is never saved."],
+        "confidence": "verified"
+      }
+    },
+    {
+      "id": "save", "title": "save_message()", "subtitle": "INSERT chat turn", "kind": "function", "group": "api", "step": 7,
+      "metadata": {
+        "summary": "Writes the user text and the full reply to the messages table.",
+        "location": { "file": "app/db/messages.py", "line": 4, "end_line": 9, "symbol": "save_message" },
+        "signature": "async def save_message(session_id: str, user_text: str, reply: str) -> None",
+        "calls": [{ "id": "pool", "name": "get_pool()" }, { "id": "pg", "name": "pool.execute" }],
+        "confidence": "verified"
+      }
+    },
+    {
+      "id": "out", "title": "SSE stream to app", "subtitle": "text/event-stream", "kind": "output", "group": "edge", "step": 8,
+      "metadata": {
+        "summary": "The app renders tokens as they arrive. The stream closes after the last token.",
+        "example": "data: Sure!\n\ndata:  You said\n\n...",
+        "confidence": "verified"
+      }
+    }
+  ],
+  "edges": [
+    { "from": "client", "to": "auth", "label": "request" },
+    { "from": "auth", "to": "verify", "label": "token" },
+    { "from": "auth", "to": "route", "label": "user claims" },
+    { "from": "route", "to": "retriever", "label": "sub, message, k=5" },
+    { "from": "retriever", "to": "embed", "label": "text" },
+    { "from": "embed", "to": "openai", "label": "HTTPS" },
+    { "from": "retriever", "to": "pool" },
+    { "from": "pool", "to": "pg", "label": "SELECT top-k", "kind": "data" },
+    { "from": "route", "to": "llm", "label": "message, chunks" },
+    { "from": "llm", "to": "claude", "label": "messages.stream" },
+    { "from": "claude", "to": "sse", "label": "tokens", "kind": "async" },
+    { "from": "sse", "to": "out", "label": "data: token" },
+    { "from": "sse", "to": "save", "label": "full reply" },
+    { "from": "save", "to": "pg", "label": "INSERT", "kind": "data" }
+  ]
+}

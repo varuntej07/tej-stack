@@ -31,6 +31,12 @@ Use raw prompts without telling the agent which skill is correct.
 
 **Expected:** Names both trace-failure (silent failure) and big-o-police (slow), picks one primary based on the phrasing, proceeds, and offers the other as a follow-up. Does not run both simultaneously without saying so.
 
+### Map request
+
+**Prompt:** `taj stack, map how the onboarding flow works in this app`
+
+**Expected:** Routes to x-ray with the request intact. Does not route to walkie-talkie, because the user wants to see the flow, not audit it.
+
 ### Negative case: no skill fits
 
 **Prompt:** `tej stack, write a landing page headline for our launch`
@@ -41,4 +47,4 @@ Use raw prompts without telling the agent which skill is correct.
 
 **Prompt:** `what can tej stack do?`
 
-**Expected:** One short paragraph per skill from the routing table, accurate to the five skills, noting the evidence-first, refusal-based house style. No invented skills.
+**Expected:** One short paragraph per skill from the routing table, accurate to the six specialist skills, noting the evidence-first, refusal-based house style. No invented skills.
