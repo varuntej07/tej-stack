@@ -1,4 +1,4 @@
-<title>__FLOWMAP_TITLE__</title>
+<title>__XRAY_TITLE__</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
@@ -156,7 +156,7 @@ ul.notes.warn li::marker{color:var(--h-rose)}
 <div class="app" id="app">
   <header class="top">
     <button class="tbtn only-narrow" id="btnLayers" aria-label="Show layers"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg></button>
-    <div class="brand"><span class="mark" aria-hidden="true"><i></i></span><h1 id="title">Flowmap</h1><span class="pill" id="mode">code</span></div>
+    <div class="brand"><span class="mark" aria-hidden="true"><i></i></span><h1 id="title">X-Ray</h1><span class="pill" id="mode">code</span></div>
     <div class="tools">
       <button class="tbtn" id="btnPrev" aria-label="Previous step"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
       <span class="steplbl" id="stepLbl">Walk flow</span>
@@ -183,7 +183,7 @@ ul.notes.warn li::marker{color:var(--h-rose)}
   </aside>
 </div>
 
-<script type="application/json" id="flowmap-data">/*__FLOWMAP_DATA__*/</script>
+<script type="application/json" id="x-ray-data">/*__XRAY_DATA__*/</script>
 <script>
 (function(){
 "use strict";
@@ -202,14 +202,14 @@ function isObj(v){return v&&typeof v==="object"&&!Array.isArray(v)}
 function str(v){return isObj(v)||Array.isArray(v)?JSON.stringify(v):String(v)}
 
 function load(){
-  var raw=$("flowmap-data").textContent.trim();
-  if(!raw||raw.indexOf("__FLOWMAP_DATA__")>=0){empty();return}
+  var raw=$("x-ray-data").textContent.trim();
+  if(!raw||raw.indexOf("__XRAY_DATA__")>=0){empty();return}
   try{init(JSON.parse(raw))}catch(e){empty("The graph data could not be parsed: "+e.message)}
 }
 function empty(msg){
   var w=el("div","empty"),b=el("div","box");
   b.appendChild(el("h2",null,"Open a flow graph"));
-  b.appendChild(el("p",null,msg||"This page renders a flowmap graph JSON. Choose a file or drop one here."));
+  b.appendChild(el("p",null,msg||"This page renders an x-ray graph JSON. Choose a file or drop one here."));
   var lab=el("label","primary","Choose graph JSON");var inp=el("input");inp.type="file";inp.accept=".json,application/json";inp.id="fileIn";inp.hidden=true;lab.appendChild(inp);
   inp.onchange=function(){if(inp.files[0])readFile(inp.files[0])};b.appendChild(lab);w.appendChild(b);canvas.appendChild(w);
   canvas.addEventListener("dragover",function(e){e.preventDefault()});
@@ -223,7 +223,7 @@ function init(g){
   G.nodes.forEach(function(n){n.metadata=isObj(n.metadata)?n.metadata:{};byId[n.id]=n;inE[n.id]=[];outE[n.id]=[]});
   G.edges=G.edges.filter(function(e){return byId[e.from]&&byId[e.to]});
   G.edges.forEach(function(e,i){e._i=i;outE[e.from].push(e);inE[e.to].push(e)});
-  $("title").textContent=G.title||"Flowmap";$("mode").textContent=G.mode||"code";
+  $("title").textContent=G.title||"X-Ray";$("mode").textContent=G.mode||"code";
   layoutAndRender();buildLayers();buildSteps();overview();
   if(narrow())$("insp").classList.add("closed");
   requestAnimationFrame(startView);
@@ -440,7 +440,7 @@ function connBtn(dir,id,e){var bt=el("button");bt.appendChild(el("span","dir",di
 
 function overview(){
   var b=ibody;b.textContent="";$("inspLbl").textContent="Overview";
-  var h=el("div","ihead");h.style.setProperty("--kc","var(--h-slate)");h.appendChild(el("span","k",(G.mode||"code")+" map"));h.appendChild(el("h2",null,G.title||"Flowmap"));if(G.subject)h.appendChild(el("div","sub",G.subject));b.appendChild(h);
+  var h=el("div","ihead");h.style.setProperty("--kc","var(--h-slate)");h.appendChild(el("span","k",(G.mode||"code")+" map"));h.appendChild(el("h2",null,G.title||"X-Ray"));if(G.subject)h.appendChild(el("div","sub",G.subject));b.appendChild(h);
   if(G.summary){var s=sec("Summary");String(G.summary).split(/\n{2,}/).forEach(function(par,i){var p=el("p",null,par);if(i)p.style.marginTop="8px";s.appendChild(p)});b.appendChild(s)}
   var st=sec("Size"),g=el("div","stats");[[G.nodes.length,"blocks"],[G.edges.length,"links"],[Math.max(G.groups.length,1),"groups"]].forEach(function(x){var d=el("div");d.appendChild(el("b",null,x[0]));d.appendChild(el("span",null,x[1]));g.appendChild(d)});st.appendChild(g);b.appendChild(st);
   var kinds={};G.nodes.forEach(function(n){kinds[n.kind||"step"]=1});var lg=sec("Legend"),l=el("div","legend");

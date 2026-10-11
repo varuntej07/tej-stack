@@ -35,7 +35,7 @@ Use raw prompts without telling the agent which skill is correct.
 
 **Prompt:** `taj stack, map how the onboarding flow works in this app`
 
-**Expected:** Routes to flowmap with the request intact. Does not route to walkie-talkie, because the user wants to see the flow, not audit it.
+**Expected:** Routes to x-ray with the request intact. Does not route to walkie-talkie, because the user wants to see the flow, not audit it.
 
 ### Negative case: no skill fits
 

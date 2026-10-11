@@ -1,13 +1,13 @@
 ---
-name: flowmap
-description: Map any code file, repo flow, architecture, or concept into an interactive Figma-style block diagram page where clicking a block opens everything used at that step (file and line, signature, inputs, outputs, config, code excerpt, gotchas, official docs). Use when the user says flowmap, map this, diagram this flow, show the architecture, walk me through how this works visually, trace this request end to end, or explain a definition or concept as a flow. Works on a single file, a whole repo, a pasted snippet, or a concept with no code. Never edits the user's code; it only writes the graph JSON and the HTML page.
+name: x-ray
+description: Map any code file, repo flow, architecture, or concept into an interactive Figma-style block diagram page where clicking a block opens everything used at that step (file and line, signature, inputs, outputs, config, code excerpt, gotchas, official docs). Use when the user says x-ray, xray, x-ray this, map this, diagram this flow, show the architecture, walk me through how this works visually, trace this request end to end, or explain a definition or concept as a flow. Also triggers on speech-to-text forms like x ray, ex ray, or extra this. Works on a single file, a whole repo, a pasted snippet, or a concept with no code. Never edits the user's code; it only writes the graph JSON and the HTML page.
 ---
 
-# Flowmap
+# X-Ray
 
 > **Update check (run silently first):** run `bash "<this skill's directory>/../../bin/check-update.sh"` and read its single `TEJ_STACK:` status line. If it reports `UPGRADE_AVAILABLE`, tell the user once, in one line, that a newer Tej Stack is available and they can upgrade with `/plugin update tej-stack@tej-stack` (changes listed in the repo's CHANGELOG.md), then continue this task normally. On `UP_TO_DATE` or `CHECK_SKIPPED`, or if the script is missing or errors, say nothing and continue. The check must never block, delay, or fail the task.
 
-Flowmap turns a target into one self-contained HTML page:
+X-Ray turns a target into one self-contained HTML page:
 - a dot-grid canvas of blocks grouped in Figma-style frames, with labeled arrows,
 - a layers panel to search and jump to blocks,
 - an inspector that shows everything known about the selected block,
@@ -57,7 +57,7 @@ Then read the actual source of every block you will draw. When web tools are ava
 
 ### 3. Write the graph JSON
 
-Read `references/schema.md`. Look at `examples/code-chat-flow.json` or `examples/concept-kv-cache.json`. Write the graph to a scratch file, for example `flowmap-<slug>.json`.
+Read `references/schema.md`. Look at `examples/code-chat-flow.json` or `examples/concept-kv-cache.json`. Write the graph to a scratch file, for example `x-ray-<slug>.json`.
 
 Rules:
 1. 6 to 25 blocks. Split bigger flows into an overview plus detail maps.
@@ -70,13 +70,13 @@ Rules:
 ### 4. Build and validate
 
 ```bash
-python3 SKILL_DIR/scripts/build.py flowmap-<slug>.json -o flowmap-<slug>.html                    # local browser file
-python3 SKILL_DIR/scripts/build.py flowmap-<slug>.json -o flowmap-<slug>.html --target artifact  # for the Artifact tool
+python3 SKILL_DIR/scripts/build.py x-ray-<slug>.json -o x-ray-<slug>.html                    # local browser file
+python3 SKILL_DIR/scripts/build.py x-ray-<slug>.json -o x-ray-<slug>.html --target artifact  # for the Artifact tool
 ```
 
 If the build prints `ERROR`, fix the JSON and run it again. Fix warnings about missing summaries or locations when you can.
 
-If Python is not available: read `assets/template.html`, replace `__FLOWMAP_TITLE__` with the title, and replace `/*__FLOWMAP_DATA__*/` with the JSON (escape every `</` as `<\/`). For a local file, wrap the result in `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head><body> ... </body></html>`.
+If Python is not available: read `assets/template.html`, replace `__XRAY_TITLE__` with the title, and replace `/*__XRAY_DATA__*/` with the JSON (escape every `</` as `<\/`). For a local file, wrap the result in `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head><body> ... </body></html>`.
 
 ### 5. Deliver
 

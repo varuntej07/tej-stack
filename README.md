@@ -58,7 +58,7 @@ Use `--update` on Unix or `-Update` on Windows to replace an existing Tej Stack 
 | `abstraction-police` | Sweep the codebase for nearly-duplicated abstractions, drifted contracts, and premature abstractions, and report ranked findings. | `$abstraction-police` or `/abstraction-police` |
 | `big-o-police` | Find where a different data structure or algorithm measurably reduces time or space cost, prove each win, and refuse the ones that do not pay. | `$big-o-police` or `/big-o-police` |
 | `get-cited` | Audit a website for AI answer-engine readiness, rank what blocks retrieval or citation with a proof per finding, and refuse the AEO tactics with no evidence. | `$get-cited` or `/get-cited` |
-| `flowmap` | Map a file, repo flow, or concept into a clickable block diagram where each block shows its file, signature, inputs, outputs, config, and docs. | `$flowmap` or `/flowmap` |
+| `x-ray` | Map a file, repo flow, or concept into a clickable block diagram where each block shows its file, signature, inputs, outputs, config, and docs. | `$x-ray` or `/x-ray` |
 | `tej` | Route a vague or voice-dictated request to the right Tej Stack skill. | `$tej` or `/tej` |
 
 ## Updating

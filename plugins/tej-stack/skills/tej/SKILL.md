@@ -1,6 +1,6 @@
 ---
 name: tej
-description: Router for the Tej Stack skill suite. Use when the user invokes Tej Stack without naming a specific skill, or asks which Tej Stack skill fits a task. Triggers on tej, tej stack, tejstack, use tej, run tej stack on this, and speech-to-text aliases like tay stack, taj stack, tedge stack, tage stack, or tej stack. Routes feature audits to walkie-talkie, failure explanations to trace-failure, duplication sweeps to abstraction-police, performance hunts to big-o-police, AI answer-engine visibility work to get-cited, and requests to map or diagram a flow, architecture, or concept to flowmap, then hands off to that skill rather than doing the work itself.
+description: Router for the Tej Stack skill suite. Use when the user invokes Tej Stack without naming a specific skill, or asks which Tej Stack skill fits a task. Triggers on tej, tej stack, tejstack, use tej, run tej stack on this, and speech-to-text aliases like tay stack, taj stack, tedge stack, tage stack, or tej stack. Routes feature audits to walkie-talkie, failure explanations to trace-failure, duplication sweeps to abstraction-police, performance hunts to big-o-police, AI answer-engine visibility work to get-cited, and requests to map or diagram a flow, architecture, or concept to x-ray, then hands off to that skill rather than doing the work itself.
 ---
 
 # Tej
@@ -18,7 +18,7 @@ Send the request to the right Tej Stack skill and hand off. Do not perform the u
 | Duplicated code, drifted copies, repetitive-feeling modules, whether to merge or inline an abstraction | `abstraction-police` |
 | Slowness, memory, scale degradation, data-structure or algorithm choices | `big-o-police` |
 | Showing up in ChatGPT, Perplexity, Claude, Copilot, or Google AI answers; AEO, GEO, AI SEO, llms.txt, schema for AI | `get-cited` |
-| Seeing how a file, repo flow, architecture, or concept works as a clickable block diagram; "map this", "diagram this flow" | `flowmap` |
+| Seeing how a file, repo flow, architecture, or concept works as a clickable block diagram; "x-ray this", "map this", "diagram this flow" | `x-ray` |
 
 ## How to route
 

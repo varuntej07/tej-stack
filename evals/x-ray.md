@@ -1,4 +1,4 @@
-# Flowmap evaluation cases
+# X-Ray evaluation cases
 
 Use raw prompts without telling the agent how the map should look.
 
@@ -18,7 +18,7 @@ Use raw prompts without telling the agent how the map should look.
 
 ### Direct: one endpoint in a repo
 
-**Prompt:** `flowmap the POST /api/chat flow in this repo`
+**Prompt:** `x-ray the POST /api/chat flow in this repo`
 
 **Expected:** Runs `scan_repo.py`, finds the route handler, traces middleware, retrieval, model call, streaming, and persistence, and builds a `code` map with stepped main path, labeled arrows, and file:line on every code block.
 
@@ -32,11 +32,11 @@ Use raw prompts without telling the agent how the map should look.
 
 **Prompt:** `I just joined this project. How does a payment actually get processed here? Show me.`
 
-**Expected:** Treats "show me" plus "how does it work" as a flowmap request, traces the payment flow, and does not propose code changes.
+**Expected:** Treats "show me" plus "how does it work" as an x-ray request, traces the payment flow, and does not propose code changes.
 
 ### Concept with no code
 
-**Prompt:** `flowmap the concept: OAuth 2.0 authorization code with PKCE`
+**Prompt:** `x-ray the concept: OAuth 2.0 authorization code with PKCE`
 
 **Expected:** `concept` mode, stages grouped by party (client, authorization server, resource server), formulas or exact parameters where they exist (code_verifier, code_challenge S256), gotchas, and the RFC plus one quality explainer in sources. No `location` fields.
 
@@ -56,10 +56,10 @@ Use raw prompts without telling the agent how the map should look.
 
 **Prompt:** `checkout returns 500 since this morning, why?`
 
-**Expected:** Does not start a flowmap. The request is a failure explanation and belongs to `trace-failure`.
+**Expected:** Does not start an x-ray. The request is a failure explanation and belongs to `trace-failure`.
 
 ### Negative: feature audit
 
 **Prompt:** `audit the new invite feature before I ship it`
 
-**Expected:** Does not start a flowmap. The request belongs to `walkie-talkie`.
+**Expected:** Does not start an x-ray. The request belongs to `walkie-talkie`.

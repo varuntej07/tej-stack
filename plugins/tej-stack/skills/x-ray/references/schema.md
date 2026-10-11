@@ -1,4 +1,4 @@
-# Flowmap graph schema
+# X-Ray graph schema
 
 One JSON file describes one map. `scripts/build.py` validates it and injects it into the canvas page.
 Every field except `title`, `nodes[].id` and `edges[].from/to` is optional. Leave a field out when you have no real value for it. The page hides empty sections.

@@ -1,4 +1,4 @@
-# How to trace a target into a flowmap
+# How to trace a target into an x-ray
 
 Read the section for the input type. Then apply "Granularity" and "Web enrichment" to every map.
 

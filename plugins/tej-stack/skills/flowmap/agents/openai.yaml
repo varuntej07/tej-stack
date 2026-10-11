@@ -1,4 +1,0 @@
-interface:
-  display_name: "Flowmap"
-  short_description: "Map code or concepts into clickable block diagrams"
-  default_prompt: "Use $flowmap to map this flow into a block diagram where each block shows its file, signature, inputs, outputs, config, and docs."

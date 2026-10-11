@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Validate a flowmap graph JSON and render it into the canvas HTML page.
+"""Validate an x-ray graph JSON and render it into the canvas HTML page.
 
 Usage:
-  python3 build.py graph.json -o flowmap-auth.html            # local file (full HTML document)
-  python3 build.py graph.json -o flowmap-auth.html --target artifact   # fragment for an Artifact publish
+  python3 build.py graph.json -o x-ray-auth.html            # local file (full HTML document)
+  python3 build.py graph.json -o x-ray-auth.html --target artifact   # fragment for an Artifact publish
   python3 build.py graph.json --check                           # validate only
 
 Exit code 0 = built (warnings allowed), 1 = errors in the graph.
@@ -104,11 +104,11 @@ def render(g, target):
     with open(TEMPLATE, encoding="utf-8") as f:
         tpl = f.read()
     g.setdefault("generated_at", dt.datetime.now().strftime("%Y-%m-%d %H:%M"))
-    g.setdefault("generator", "flowmap skill")
+    g.setdefault("generator", "x-ray skill")
     data = json.dumps(g, ensure_ascii=False, indent=None, separators=(",", ":"))
     data = data.replace("</", "<\\/").replace("<!--", "<\\!--")
-    title = html.escape(str(g.get("title", "Flowmap"))[:80])
-    out = tpl.replace("__FLOWMAP_TITLE__", title, 1).replace("/*__FLOWMAP_DATA__*/", data, 1)
+    title = html.escape(str(g.get("title", "X-Ray"))[:80])
+    out = tpl.replace("__XRAY_TITLE__", title, 1).replace("/*__XRAY_DATA__*/", data, 1)
     if target == "local":
         out = ('<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
                '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
@@ -119,7 +119,7 @@ def render(g, target):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("graph", help="path to graph JSON")
-    ap.add_argument("-o", "--out", help="output HTML path (default: flowmap-<graph name>.html)")
+    ap.add_argument("-o", "--out", help="output HTML path (default: x-ray-<graph name>.html)")
     ap.add_argument("--target", choices=["local", "artifact"], default="local",
                     help="local = full HTML document to open in a browser; artifact = fragment for the Artifact tool")
     ap.add_argument("--check", action="store_true", help="validate only")
@@ -142,7 +142,7 @@ def main():
     if a.check:
         print(f"OK: {n} blocks, {m} links, {len(warnings)} warning(s).")
         return 0
-    out = a.out or "flowmap-" + os.path.splitext(os.path.basename(a.graph))[0] + ".html"
+    out = a.out or "x-ray-" + os.path.splitext(os.path.basename(a.graph))[0] + ".html"
     with open(out, "w", encoding="utf-8") as f:
         f.write(render(g, a.target))
     print(f"OK: wrote {out} ({n} blocks, {m} links, {len(warnings)} warning(s), target={a.target}).")
