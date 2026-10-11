@@ -68,6 +68,38 @@ def validate_plugin() -> None:
     if claude_entry.get("source") != "./plugins/tej-stack":
         fail("Claude marketplace path must target ./plugins/tej-stack")
 
+    for entry in claude_market.get("plugins", [])[1:]:
+        validate_hook_plugin(entry, version)
+
+
+def validate_hook_plugin(entry: dict, version: str) -> None:
+    """A Claude-only plugin that ships hooks instead of skills (speed-dial)."""
+    name = entry.get("name", "")
+    if not SKILL_NAME.fullmatch(name):
+        fail(f"invalid plugin name in Claude marketplace: {name!r}")
+    if entry.get("source") != f"./plugins/{name}" or not entry.get("description"):
+        fail(f"Claude marketplace entry for {name} must target ./plugins/{name} and have a description")
+    plugin = ROOT / "plugins" / name
+    manifest_path = plugin / ".claude-plugin" / "plugin.json"
+    manifest = load_json(manifest_path)
+    if manifest.get("name") != name:
+        fail(f"wrong plugin name in {manifest_path.relative_to(ROOT)}")
+    if manifest.get("version") != version:
+        fail(f"version mismatch in {manifest_path.relative_to(ROOT)}")
+    if not manifest.get("description") or not manifest.get("author", {}).get("name"):
+        fail(f"incomplete metadata in {manifest_path.relative_to(ROOT)}")
+
+    hooks_path = plugin / "hooks" / "hooks.json"
+    hooks = load_json(hooks_path).get("hooks")
+    if not isinstance(hooks, dict) or not hooks:
+        fail(f"no hooks declared in {hooks_path.relative_to(ROOT)}")
+    for groups in hooks.values():
+        for group in groups:
+            for hook in group.get("hooks", []):
+                for relative in re.findall(r"\$\{CLAUDE_PLUGIN_ROOT\}/([^\"'\s]+)", hook.get("command", "")):
+                    if not (plugin / relative).is_file():
+                        fail(f"hook in {name} points at a missing file: {relative}")
+
 
 def validate_skills() -> int:
     skills_dir = PLUGIN / "skills"
@@ -111,7 +143,8 @@ def validate_skills() -> int:
 def main() -> None:
     validate_plugin()
     count = validate_skills()
-    print(f"Tej Stack is valid: {count} skills, 2 plugin manifests, 2 marketplaces")
+    hook_plugins = len(load_json(ROOT / ".claude-plugin" / "marketplace.json").get("plugins", [])) - 1
+    print(f"Tej Stack is valid: {count} skills, {2 + hook_plugins} plugin manifests, 2 marketplaces")
 
 
 if __name__ == "__main__":

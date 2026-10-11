@@ -2,6 +2,11 @@
 
 All notable changes to Tej Stack. Versions follow semantic versioning; the current version lives in `VERSION`.
 
+## 0.7.0 (2026-10-10)
+
+- New `speed-dial` Claude Code plugin, the first hook plugin in this marketplace. A short prompt like "make the play store build" is matched by Jev (TypeSafe) against the commands you save in `.claude/speed-dial.json`, and the match starts in a new terminal window without waiting on the model. Anything else passes through unchanged. Bring your own `TYPESAFE_API_KEY`. Project files stay off until you type `speed-dial trust`.
+- `validate.py` now also checks hook plugins listed in the Claude marketplace.
+
 ## 0.6.0 (2026-10-10)
 
 - New `x-ray` skill: map a code file, a repo flow, or a concept into a Figma-style block diagram page. Clicking a block opens its file and line, signature, inputs and outputs, config, code excerpt, gotchas, and official docs. Ships a stdlib-only repo scanner, a graph validator and builder, and a self-contained canvas template that runs as a local file or a claude.ai Artifact.

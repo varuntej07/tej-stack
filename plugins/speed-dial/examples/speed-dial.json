@@ -1,0 +1,27 @@
+{
+  "entries": [
+    {
+      "id": "android_release",
+      "description": "Build the release Android App Bundle (.aab) for the Play Store",
+      "cwd": ".",
+      "command": "flutter build appbundle --release"
+    },
+    {
+      "id": "deploy_backend",
+      "description": "Deploy the backend service to production",
+      "cwd": "backend",
+      "command": {
+        "windows": "bash ./deploy.sh",
+        "macos": "./deploy.sh",
+        "linux": "./deploy.sh"
+      },
+      "confirm": true
+    },
+    {
+      "id": "typecheck",
+      "description": "Type-check the TypeScript project without emitting files",
+      "cwd": ".",
+      "command": "npx tsc --noEmit"
+    }
+  ]
+}

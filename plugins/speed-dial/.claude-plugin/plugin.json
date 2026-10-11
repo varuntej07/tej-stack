@@ -1,0 +1,13 @@
+{
+  "name": "speed-dial",
+  "version": "0.7.0",
+  "description": "Say what you want run in plain words and your saved project commands start instantly, without waiting on the model. Powered by Jev, bring your own TypeSafe key.",
+  "author": {
+    "name": "Varun Tej",
+    "url": "https://github.com/varuntej07"
+  },
+  "homepage": "https://github.com/varuntej07/tej-stack",
+  "repository": "https://github.com/varuntej07/tej-stack",
+  "license": "MIT",
+  "keywords": ["hooks", "commands", "productivity", "jev", "typesafe"]
+}

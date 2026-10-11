@@ -9,6 +9,11 @@
       "name": "tej-stack",
       "source": "./plugins/tej-stack",
       "description": "Practical, evidence-first skills for solo founders building and shipping startups with AI coding agents."
+    },
+    {
+      "name": "speed-dial",
+      "source": "./plugins/speed-dial",
+      "description": "Say what you want run in plain words and your saved project commands start instantly, without waiting on the model. Powered by Jev, bring your own TypeSafe key."
     }
   ]
 }
