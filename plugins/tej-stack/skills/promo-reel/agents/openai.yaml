@@ -1,0 +1,4 @@
+interface:
+  display_name: "Promo Reel"
+  short_description: "Render an app promo or store preview from real screens"
+  default_prompt: "Use $promo-reel to make a 20 second promo video of my app from real screens, synced to my song, with a beat table for my approval first."

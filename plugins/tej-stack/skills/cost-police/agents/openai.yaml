@@ -1,0 +1,4 @@
+interface:
+  display_name: "Cost Police"
+  short_description: "Find where tokens, metered services, and infra waste money"
+  default_prompt: "Use $cost-police to audit this codebase for LLM token waste, runaway billing risks, and infrastructure cost, price every finding from live official pricing pages with the math shown, and list what you could not price or deliberately refused."

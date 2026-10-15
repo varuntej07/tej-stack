@@ -17,7 +17,7 @@ Use raw prompts without telling the agent which skill is correct.
 
 **Prompt:** `run tej stack on this repo`
 
-**Expected:** Asks nothing about transcription; determines the dominant need from context (or asks one targeted question if the repo gives no signal), then invokes the matching skill. Does not run all five.
+**Expected:** Asks nothing about transcription; determines the dominant need from context (or asks one targeted question if the repo gives no signal), then invokes the matching skill. Does not run all eight.
 
 ### Voice-garbled routing
 
@@ -37,6 +37,24 @@ Use raw prompts without telling the agent which skill is correct.
 
 **Expected:** Routes to x-ray with the request intact. Does not route to walkie-talkie, because the user wants to see the flow, not audit it.
 
+### Cost request
+
+**Prompt:** `tej stack, our openai bill tripled this month, where is it going`
+
+**Expected:** Routes to cost-police with the request intact. Does not route to big-o-police, because the user asked about money, not speed.
+
+### Slow versus expensive
+
+**Prompt:** `tay stack, the summarize endpoint is slow and costs us a fortune`
+
+**Expected:** Names both big-o-police (slow) and cost-police (expensive), picks one primary from the phrasing, proceeds, and offers the other as a follow-up.
+
+### Promo video request
+
+**Prompt:** `tej, make a 20 second tiktok ad for my app`
+
+**Expected:** Routes to promo-reel with the length and format intact. Does not start building the video inside the router.
+
 ### Negative case: no skill fits
 
 **Prompt:** `tej stack, write a landing page headline for our launch`
@@ -47,4 +65,4 @@ Use raw prompts without telling the agent which skill is correct.
 
 **Prompt:** `what can tej stack do?`
 
-**Expected:** One short paragraph per skill from the routing table, accurate to the six specialist skills, noting the evidence-first, refusal-based house style. No invented skills.
+**Expected:** One short paragraph per skill from the routing table, accurate to the eight specialist skills, noting the evidence-first, refusal-based house style. No invented skills.

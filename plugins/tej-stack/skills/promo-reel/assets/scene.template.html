@@ -1,0 +1,267 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>promo-reel scene</title>
+<style>
+/* Brand tokens: replace every value with the app's own (colors, fonts, radii) from its codebase.
+   Embed the app's font files with @font-face; never rely on fonts installed on this machine. */
+/* @font-face { font-family: "AppHead"; src: url("fonts/AppHead-Bold.ttf"); font-weight: 700; } */
+:root{
+  --bg:#0F1115;          /* frame background */
+  --ink:#F5F6F8;         /* headline color */
+  --muted:#A3A7B3;       /* secondary text */
+  --accent:#6E8BFF;      /* the app's primary color, used for accent words and the CTA */
+  --body:#0A0A0C;        /* device body */
+  --rim:#2C2E34;         /* device rim stroke */
+  --font-head: "AppHead", "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+  --font-body: "AppBody", "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg)}
+#stage{position:absolute;inset:0;overflow:hidden;background:var(--bg);font-family:var(--font-body)}
+.abs{position:absolute;left:0;top:0;will-change:transform,opacity}
+#device{transform-origin:50% 50%}
+#body{position:absolute;inset:0;background:var(--body);box-shadow:0 0 0 2px var(--rim)}
+.btn{position:absolute;background:var(--rim)}
+#screen{position:absolute;overflow:hidden;background:#000}
+#content{position:absolute;inset:0;transform-origin:0 0}
+.layer{position:absolute;left:0;top:0;width:100%}
+.layer img,.layer video{display:block;width:100%;height:auto}
+#camera{position:absolute;background:#000;z-index:5}
+.sysbar{position:absolute;left:0;right:0;z-index:4;display:flex;align-items:center;justify-content:space-between;color:#fff;font-family:var(--font-body);font-weight:600}
+#gesture{position:absolute;z-index:4;background:#fff;opacity:.85}
+#touch{position:absolute;z-index:6;border-radius:50%;pointer-events:none}
+#touch .dot{position:absolute;inset:0;border-radius:50%;background:rgba(255,255,255,.55);box-shadow:0 0 0 2px rgba(0,0,0,.18)}
+#touch .ring{position:absolute;inset:0;border-radius:50%;border:2px solid rgba(255,255,255,.9)}
+.headline{position:absolute;color:var(--ink);font-family:var(--font-head);font-weight:700;letter-spacing:-.022em;line-height:1.04;white-space:pre-line}
+.headline em{font-style:normal;color:var(--accent)}
+#end{text-align:center;color:var(--ink)}
+#end .logo{display:block;margin:0 auto;object-fit:contain}
+#end .logo-fallback{margin:0 auto;display:flex;align-items:center;justify-content:center;background:var(--accent);color:#fff;font-family:var(--font-head);font-weight:700}
+#end .name{font-family:var(--font-head);font-weight:700;letter-spacing:-.02em}
+#end .promise{color:var(--muted)}
+#end .cta{display:inline-block;color:var(--bg);background:var(--ink);font-weight:700}
+#debug{position:absolute;inset:0;z-index:50;pointer-events:none;display:none}
+#debug .zone{position:absolute;left:0;right:0;background:rgba(255,40,60,.22);border:1px dashed rgba(255,80,90,.9)}
+#debug .clock{position:absolute;right:12px;top:12px;font:600 22px/1 ui-monospace,Consolas,monospace;color:#fff;background:rgba(0,0,0,.6);padding:6px 10px}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="device" class="abs">
+    <div id="body"></div>
+    <div id="screen"><div id="content"></div></div>
+  </div>
+  <div id="heads"></div>
+  <div id="end" class="abs"></div>
+  <div id="debug"><div class="zone top"></div><div class="zone bottom"></div><div class="clock"></div></div>
+</div>
+<script src="engine.js"></script>
+<script>
+/* ===================== SCENE CONFIG: the only part you edit per ad ===================== */
+const CONFIG = {
+  mode: 'social',              // 'social' (drawn device), 'store' (footage only, no device), 'loop' (seamless hero)
+  device: 'android',           // 'android' | 'iphone' | 'none' (store mode forces 'none')
+  screenAspect: 1080/2400,     // width / height of the real screenshots (from capture.py output)
+  drawSystemBars: false,       // true only when screens are rebuilt in HTML; real screenshots already include them
+  seconds: 20,                 // T, a whole number of beats: bars * 4 * 60 / BPM
+  bpm: 120,                    // from beatgrid.py; beat times below should sit on this grid
+  // One entry per beat in the approved beat table. screen: PNG/JPG from capture.py, or an all-intra .webm from
+  // `capture.py to-webm` (with clip: seconds into the footage). headline: 5 words or fewer; wrap one word in *stars*
+  // for the accent color; "\n" forces a line break. tap: {x, y, at} in screen fractions, at = seconds after beat start.
+  // zoom: {x, y, s} focus point in screen fractions and scale (1 = none). pan: 0..1 scrolls a tall screenshot.
+  beats: [
+    { t: 0.0, screen: 'shots/01.png', headline: 'Your *hook* here', zoom: {x:.5, y:.35, s:1.0} },
+    { t: 4.0, screen: 'shots/02.png', headline: 'First real benefit', tap: {x:.5, y:.62, at:1.0} },
+    { t: 8.0, screen: 'shots/03.png', headline: 'Second benefit', zoom: {x:.5, y:.30, s:1.35} },
+    { t: 12.0, screen: 'shots/02.png', headline: 'The payoff moment', pan: .4 },
+  ],
+  // End card, held for 2 s or more. cta: plain text unless the user supplied official store badge artwork.
+  // Google Play previews: set cta to '' (Play asks for no "Download now" style calls to action).
+  end: { t: 16.0, logo: 'brand/logo.png', name: 'App Name', promise: 'One honest line about the app.', cta: 'Get it on Google Play' },
+  sounds: { tap: 0.5, swap: 0.0 },  // gain per event kind exported in window.SOUNDS (0 = do not export)
+};
+/* ======================================================================================= */
+
+T = CONFIG.seconds;
+LOOP = CONFIG.mode === 'loop';
+const DEVICE = CONFIG.mode === 'store' ? 'none' : CONFIG.device;
+const W = innerWidth, H = innerHeight, AR = H / W;
+const FORMAT = AR > 1.3 ? 'portrait' : AR < 0.77 ? 'landscape' : 'square';
+const $ = s => document.querySelector(s), el = (tag, cls, parent) => { const e = document.createElement(tag); if (cls) e.className = cls; parent && parent.appendChild(e); return e; };
+const DEBUG = /[?&]debug/.test(location.search);
+
+/* ---------- layout: re-laid out per format, never cropped ---------- */
+// Portrait keeps text and key UI out of the top 14% and bottom 20% (platform overlays).
+function layout(){
+  const L = {};
+  if (DEVICE === 'none') {
+    L.dev = { x: 0, y: 0, w: W, h: H, bezel: 0, radius: 0 };
+    L.head = { x: W*.08, y: H*(FORMAT === 'portrait' ? .145 : .07), w: W*.84, size: Math.min(W, H) * .066, align: 'center', plate: true };
+  } else if (FORMAT === 'portrait') {
+    const top = H*.24, bottom = H*.795, dh = bottom - top;
+    L.dev = devGeom(dh, W/2, top + dh/2);
+    L.head = { x: W*.08, y: H*.145, w: W*.84, size: W*.074, align: 'center' };
+  } else if (FORMAT === 'square') {
+    const dh = H*.86; L.dev = devGeom(dh, W*.70, H/2);
+    L.head = { x: W*.07, y: H*.36, w: W*.44, size: W*.064, align: 'left' };
+  } else {
+    const dh = H*.86; L.dev = devGeom(dh, W*.70, H/2);
+    L.head = { x: W*.09, y: H*.38, w: W*.42, size: H*.085, align: 'left' };
+  }
+  L.endY = FORMAT === 'portrait' ? H*.47 : H*.5;
+  return L;
+}
+// Device body around a screen of the configured aspect. Proportions follow current flagship phones:
+// thin uniform bezel, screen corner radius about 9 to 12% of screen width.
+function devGeom(bodyH, cx, cy){
+  const ip = DEVICE === 'iphone';
+  const bezelK = ip ? .042 : .030;              // bezel as a fraction of screen width
+  const sh = bodyH / (1 + 2*bezelK*CONFIG.screenAspect), sw = sh * CONFIG.screenAspect, bezel = sw*bezelK;
+  const w = sw + 2*bezel, h = sh + 2*bezel;
+  return { x: cx - w/2, y: cy - h/2, w, h, bezel, sw, sh, radius: sw*(ip ? .125 : .095) + bezel };
+}
+const L = layout();
+
+/* ---------- build the device ---------- */
+const dev = $('#device'), body = $('#body'), screen = $('#screen'), content = $('#content');
+Object.assign(dev.style, { width: L.dev.w + 'px', height: L.dev.h + 'px' });
+if (DEVICE === 'none') { body.style.display = 'none'; Object.assign(screen.style, { left: 0, top: 0, width: W + 'px', height: H + 'px' }); }
+else {
+  const g = L.dev, sw = g.sw;
+  body.style.borderRadius = g.radius + 'px';
+  Object.assign(screen.style, { left: g.bezel + 'px', top: g.bezel + 'px', width: sw + 'px', height: g.sh + 'px', borderRadius: (g.radius - g.bezel) + 'px' });
+  const btns = DEVICE === 'iphone' ? [['l', .17, .035], ['l', .25, .065], ['l', .33, .065], ['r', .27, .10]] : [['r', .20, .075], ['r', .31, .14]];
+  for (const [side, y, len] of btns) { const b = el('div', 'btn', dev); Object.assign(b.style, { width: sw*.012 + 'px', height: g.h*len + 'px', top: g.h*y + 'px', [side === 'l' ? 'left' : 'right']: -sw*.010 + 'px', borderRadius: sw*.006 + 'px' }); }
+  const cam = el('div', '', screen); cam.id = 'camera';
+  if (DEVICE === 'iphone') Object.assign(cam.style, { width: sw*.31 + 'px', height: sw*.092 + 'px', left: sw*.345 + 'px', top: sw*.028 + 'px', borderRadius: sw*.046 + 'px' });
+  else { const d = sw*.036; Object.assign(cam.style, { width: d + 'px', height: d + 'px', left: (sw - d)/2 + 'px', top: sw*.03 + 'px', borderRadius: '50%' }); }
+  if (CONFIG.drawSystemBars) drawSystemBars(sw, g.sh);
+}
+function drawSystemBars(sw, sh){
+  const ip = DEVICE === 'iphone', bar = el('div', 'sysbar', screen), fs = sw*(ip ? .042 : .036);
+  Object.assign(bar.style, { top: 0, height: sw*(ip ? .13 : .085) + 'px', padding: `0 ${sw*(ip ? .09 : .055)}px`, fontSize: fs + 'px' });
+  const icons = `<svg width="${fs*3.6}" height="${fs}" viewBox="0 0 36 10" fill="#fff"><rect x="0" y="6" width="2" height="4"/><rect x="3" y="4" width="2" height="6"/><rect x="6" y="2" width="2" height="8"/><rect x="9" y="0" width="2" height="10"/><path d="M15 3.2a8 8 0 0 1 10 0l-1.3 1.4a6 6 0 0 0-7.4 0zM17.2 5.6a4.8 4.8 0 0 1 5.6 0L20 8.6z"/><rect x="27" y="1" width="8" height="8" rx="1.6" fill="none" stroke="#fff"/><rect x="28.5" y="2.5" width="5" height="5" rx=".6"/></svg>`;
+  bar.innerHTML = `<span>9:41</span><span style="display:flex;align-items:center">${icons}</span>`;
+  const gb = el('div', '', screen); gb.id = 'gesture';
+  const gw = sw*(ip ? .36 : .30);
+  Object.assign(gb.style, { width: gw + 'px', height: sw*.012 + 'px', left: (sw - gw)/2 + 'px', bottom: sw*(ip ? .022 : .018) + 'px', borderRadius: sw*.006 + 'px' });
+}
+
+/* ---------- screens, headlines, touch dot ---------- */
+const beats = CONFIG.beats.slice().sort((a, b) => a.t - b.t);
+const endT = LOOP ? T : (CONFIG.end ? CONFIG.end.t : T);
+const SW = DEVICE === 'none' ? W : L.dev.sw, SH = DEVICE === 'none' ? H : L.dev.sh;
+const layers = [], videos = [], loads = [];
+function visTrack(i, start, stop){
+  // Visible from start to stop. In loop mode the last beat stays up across the seam and hands over to the first
+  // beat at beats[0].t, so every track closes. Start the first beat half a beat in to keep cuts off the seam.
+  if (!LOOP) return V(0, [start, 1], [stop, 0]);
+  if (i === beats.length - 1 && i > 0) return V(1, [beats[0].t, 0], [start, 1]);
+  return V(0, [start, 1], [stop, 0]);
+}
+beats.forEach((b, i) => {
+  const stop = i + 1 < beats.length ? beats[i + 1].t : endT;
+  const box = el('div', 'layer', content), isVid = /\.webm$/i.test(b.screen);
+  const m = el(isVid ? 'video' : 'img', '', box); m.src = b.screen;
+  if (isVid) { m.muted = true; m.preload = 'auto'; m.playsInline = true; videos.push({ el: m, t0: b.t, from: b.clip || 0, beat: i });
+    loads.push(new Promise(r => { if (m.readyState >= 2) r(); else { m.addEventListener('loadeddata', r, { once: true }); m.addEventListener('error', () => { console.error('cannot load ' + b.screen); r(); }, { once: true }); } })); }
+  else loads.push(m.decode().catch(() => console.error('cannot load ' + b.screen)));
+  layers.push({ box, media: m, v: visTrack(i, b.t, stop), pan: b.pan || 0 });
+});
+// Content zoom (focus point and scale) and touch position, each a spring track in screen fractions.
+const zx = new Tr(.5), zy = new Tr(.5), zs = new Tr(1), cx = new Tr(.5), cy = new Tr(.7), press = new Tr(0), touchV = new Tr(0);
+const SOUNDS = [];
+beats.forEach((b, i) => {
+  // Store previews show the native UI unzoomed (Apple's recommendation), so zoom is ignored in store mode.
+  const z = (CONFIG.mode !== 'store' && b.zoom) || { x: .5, y: .5, s: 1 };
+  zx.to(b.t + .02, z.x, CAM); zy.to(b.t + .02, z.y, CAM); zs.to(b.t + .02, z.s, CAM);
+  if (CONFIG.sounds.swap && i > 0) SOUNDS.push([b.t, 'swap', CONFIG.sounds.swap]);
+  if (b.tap) {
+    const at = b.t + b.tap.at;
+    touchV.to(at - .55, 1, IN); cx.to(at - .55, b.tap.x, CUR); cy.to(at - .55, b.tap.y, CUR);
+    press.to(at - .05, 1, FAST); press.to(at + .12, 0, FAST); touchV.to(at + .45, 0, OUT);
+    if (CONFIG.sounds.tap) SOUNDS.push([at, 'tap', CONFIG.sounds.tap]);
+  }
+});
+if (LOOP) for (const [tr, name] of [[zx, 'zoom x'], [zy, 'zoom y'], [zs, 'zoom'], [cx, 'touch x'], [cy, 'touch y'], [press, 'press'], [touchV, 'touch']])
+  if (!tr.closes()) tr.to(T - 1.0, tr.v0, CAM);   // settled well before the seam
+const touch = el('div', '', screen); touch.id = 'touch'; el('div', 'ring', touch); el('div', 'dot', touch);
+const TD = SW * .11; Object.assign(touch.style, { width: TD + 'px', height: TD + 'px' });
+
+const heads = beats.map((b, i) => {
+  const h = el('div', 'headline', $('#heads'));
+  h.innerHTML = (b.headline || '').replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c])).replace(/\*([^*]+)\*/g, '<em>$1</em>');
+  Object.assign(h.style, { left: L.head.x + 'px', top: L.head.y + 'px', width: L.head.w + 'px', fontSize: L.head.size + 'px', textAlign: L.head.align });
+  if (L.head.plate) Object.assign(h.style, { background: 'rgba(0,0,0,.62)', padding: `${L.head.size*.3}px ${L.head.size*.45}px`, borderRadius: L.head.size*.3 + 'px', width: 'max-content', maxWidth: L.head.w + 'px', left: '50%' });
+  return { h, v: layers[i].v };
+});
+
+/* ---------- device entrance, end card ---------- */
+const ENTER = !LOOP && DEVICE !== 'none';
+const devIn = ENTER ? new Tr(0).to(0, 1, IN) : new Tr(1), devY = ENTER ? new Tr(H*.035).to(0, 0, GEO) : new Tr(0);
+const devS = ENTER ? new Tr(.965).to(0, 1, CAM) : new Tr(1);
+let endV = null;
+if (CONFIG.end && !LOOP) {
+  const e = $('#end'), c = CONFIG.end, s = Math.min(W, H);
+  const logo = c.logo ? `<img class="logo" src="${c.logo}" style="width:${s*.2}px;height:${s*.2}px;border-radius:${s*.045}px">`
+                      : `<div class="logo-fallback" style="width:${s*.2}px;height:${s*.2}px;border-radius:${s*.045}px;font-size:${s*.1}px">${(c.name || '?')[0]}</div>`;
+  e.innerHTML = `${logo}<div class="name" style="font-size:${s*.085}px;margin-top:${s*.04}px">${c.name}</div>`
+    + `<div class="promise" style="font-size:${s*.038}px;margin-top:${s*.016}px">${c.promise}</div>`
+    + (c.cta ? `<div class="cta" style="font-size:${s*.036}px;margin-top:${s*.05}px;padding:${s*.022}px ${s*.05}px;border-radius:${s*.06}px">${c.cta}</div>` : '');
+  Object.assign(e.style, { width: W + 'px' });
+  endV = V(0, [c.t + .08, 1]);
+  devIn.to(c.t, 0, OUT); devS.to(c.t, .94, OUT);
+}
+
+/* ---------- draw: every value is a pure function of t ---------- */
+function draw(t){
+  const g = L.dev, k = devS.at(t), ox = g.x, oy = g.y + devY.at(t);
+  dev.style.transform = `translate(${ox}px,${oy}px) scale(${k})`;
+  dev.style.opacity = clamp(devIn.at(t), 0, 1).toFixed(4);
+  // zoom inside the screen: focus point f scales by s around itself
+  const s = zs.at(t), fx = zx.at(t)*SW, fy = zy.at(t)*SH;
+  content.style.transform = `translate(${fx*(1 - s)}px,${fy*(1 - s)}px) scale(${s})`;
+  for (const l of layers) {
+    const v = clamp(l.v.at(t), 0, 1), sc = layer(l.box, v, s, .985);
+    const ih = l.media.naturalHeight ? l.media.naturalHeight * SW / l.media.naturalWidth : (l.media.videoHeight ? l.media.videoHeight * SW / l.media.videoWidth : SH);
+    const panY = -l.pan * Math.max(0, ih - SH);
+    l.box.style.transform = `translate(${SW*(1 - sc)/2}px,${panY + SH*(1 - sc)/2}px) scale(${sc})`;
+  }
+  for (const h of heads) { const v = clamp(h.v.at(t), 0, 1); layer(h.h, v, 1, .97); h.h.style.transform = `${L.head.plate ? 'translateX(-50%) ' : ''}translateY(${(1 - v)*L.head.size*.25}px)`; }
+  const tv = clamp(touchV.at(t), 0, 1), p = clamp(press.at(t), 0, 1.2);
+  const px = fx + (cx.at(t)*SW - fx)*s, py = fy + (cy.at(t)*SH - fy)*s;
+  touch.style.opacity = tv.toFixed(4);
+  touch.style.transform = `translate(${px - TD/2}px,${py - TD/2}px) scale(${1 - .18*p})`;
+  touch.firstChild.style.opacity = (p*.9).toFixed(3); touch.firstChild.style.transform = `scale(${1 + .5*p})`;
+  if (endV) { const v = clamp(endV.at(t), 0, 1), e = $('#end'); layer(e, v, 1, .96); e.style.transform = `translateY(${L.endY - e.offsetHeight/2 + (1 - v)*H*.02}px)`; }
+  if (DEBUG) $('#debug .clock').textContent = t.toFixed(2) + 's';
+}
+async function seekVideos(t){
+  const waits = [];
+  for (const v of videos) {
+    if (layers[v.beat].v.at(t) < .002) continue;
+    const target = clamp(v.from + Math.max(0, t - v.t0), 0, Math.max(0, (v.el.duration || 0) - .001));
+    if (Math.abs(v.el.currentTime - target) > 1e-4) waits.push(new Promise(r => { v.el.addEventListener('seeked', r, { once: true }); v.el.currentTime = target; }));
+  }
+  await Promise.all(waits);
+}
+window.seek = function(t){
+  t = LOOP ? ((t % T) + T) % T : clamp(t, 0, T);
+  draw(t);
+  return videos.length ? seekVideos(t) : undefined;
+};
+window.T = T;
+window.SOUNDS = SOUNDS.filter(s => s[0] >= 0 && s[0] <= T);
+window.sceneReady = Promise.all(loads).then(() => { seek(0); return true; });
+if (LOOP) { const open = [devIn, devY, devS, zx, zy, zs, cx, cy, press, touchV, ...layers.map(l => l.v)].filter(tr => !tr.closes()); if (open.length) console.error(`loop: ${open.length} track(s) do not return to their start value`); }
+if (DEBUG) {
+  $('#debug').style.display = 'block';
+  const top = $('#debug .top'), bot = $('#debug .bottom');
+  if (FORMAT === 'portrait') { top.style.cssText += `top:0;height:${H*.14}px`; bot.style.cssText += `bottom:0;height:${H*.20}px`; } else { top.style.display = bot.style.display = 'none'; }
+}
+seek(0);
+</script>
+</body>
+</html>

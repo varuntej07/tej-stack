@@ -1,6 +1,6 @@
 {
   "name": "tej-stack",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Practical, evidence-first skills for solo founders building and shipping startups with AI coding agents.",
   "author": {
     "name": "Varun Tej",
@@ -9,6 +9,6 @@
   "homepage": "https://github.com/varuntej07/tej-stack",
   "repository": "https://github.com/varuntej07/tej-stack",
   "license": "MIT",
-  "keywords": ["founders", "startups", "debugging", "product-quality", "agent-skills"],
+  "keywords": ["founders", "startups", "debugging", "product-quality", "agent-skills", "cost-optimization", "llm-costs", "promo-video"],
   "skills": "./skills/"
 }

@@ -2,6 +2,13 @@
 
 All notable changes to Tej Stack. Versions follow semantic versioning; the current version lives in `VERSION`.
 
+## 0.8.0 (2026-10-15)
+
+- New `cost-police` skill: finds where LLM tokens, metered services (Firebase, serverless, storage, SMS), and infrastructure as code (Terraform, CloudFormation, Pulumi, serverless.yml) waste money, and where one bug or abuser could run up the bill. Prices are fetched live from official pages and cited on every dollar figure. It refuses savings claims without real volume and model downgrades without a quality eval. Ships a standard-library scanner for billed call sites.
+- New `promo-reel` skill: turns a real app into a short promo video from one HTML scene, in three modes: social ad, App Store or Play preview, and seamless landing-page loop. It captures real screens over adb, simctl, or Playwright, keeps a claims ledger so nothing invented reaches the screen, stops for your OK on the beat table, and checks the render against store and platform specs before delivery. Based on the ad-kit springs engine and renderer.
+- The `tej` router now sends cost questions to `cost-police` and promo video requests to `promo-reel`.
+- README rewrite: one-paste install, quick start, example sessions, a "which skill" table, and uninstall steps.
+
 ## 0.7.0 (2026-10-10)
 
 - New `speed-dial` Claude Code plugin, the first hook plugin in this marketplace. A short prompt like "make the play store build" is matched by Jev (TypeSafe) against the commands you save in `.claude/speed-dial.json`, and the match starts in a new terminal window without waiting on the model. Anything else passes through unchanged. Bring your own `TYPESAFE_API_KEY`. Project files stay off until you type `speed-dial trust`.

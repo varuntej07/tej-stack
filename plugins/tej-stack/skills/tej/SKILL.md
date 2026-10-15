@@ -1,6 +1,6 @@
 ---
 name: tej
-description: Router for the Tej Stack skill suite. Use when the user invokes Tej Stack without naming a specific skill, or asks which Tej Stack skill fits a task. Triggers on tej, tej stack, tejstack, use tej, run tej stack on this, and speech-to-text aliases like tay stack, taj stack, tedge stack, tage stack, or tej stack. Routes feature audits to walkie-talkie, failure explanations to trace-failure, duplication sweeps to abstraction-police, performance hunts to big-o-police, AI answer-engine visibility work to get-cited, and requests to map or diagram a flow, architecture, or concept to x-ray, then hands off to that skill rather than doing the work itself.
+description: Router for the Tej Stack skill suite. Use when the user invokes Tej Stack without naming a specific skill, or asks which Tej Stack skill fits a task. Triggers on tej, tej stack, tejstack, use tej, run tej stack on this, and speech-to-text aliases like tay stack, taj stack, tedge stack, tage stack, or tej stack. Routes feature audits to walkie-talkie, failure explanations to trace-failure, duplication sweeps to abstraction-police, performance hunts to big-o-police, AI answer-engine visibility work to get-cited, requests to map or diagram a flow, architecture, or concept to x-ray, API bills, token spend, surprise cloud bills, and infrastructure cost to cost-police, and app promo videos, ads, and store preview videos to promo-reel, then hands off to that skill rather than doing the work itself.
 ---
 
 # Tej
@@ -19,12 +19,14 @@ Send the request to the right Tej Stack skill and hand off. Do not perform the u
 | Slowness, memory, scale degradation, data-structure or algorithm choices | `big-o-police` |
 | Showing up in ChatGPT, Perplexity, Claude, Copilot, or Google AI answers; AEO, GEO, AI SEO, llms.txt, schema for AI | `get-cited` |
 | Seeing how a file, repo flow, architecture, or concept works as a clickable block diagram; "x-ray this", "map this", "diagram this flow" | `x-ray` |
+| Money: an API or LLM bill that is too high, token spend, cost per user, a surprise Firebase or AWS bill, whether a bug or abuser could run up the bill, Terraform or infrastructure cost | `cost-police` |
+| A short promo video of the user's app: social ad, launch clip, App Store or Play preview video, landing-page hero loop | `promo-reel` |
 
 ## How to route
 
 1. Match the request against the table. If exactly one row fits, invoke that skill immediately with the user's original request; do not re-ask what they meant.
 2. If two rows genuinely fit (a slow feature that also misbehaves), name both in one sentence, pick the one matching the user's primary verb (fix, explain, audit, speed up), and proceed. Offer the other as a follow-up at the end.
 3. If no row fits, say so plainly and do the task without a Tej Stack skill; do not force the nearest skill onto a request it does not cover.
-4. Voice-dictation input is often garbled; resolve the intent, not the transcription. "Run tay stack on why checkout is slow" routes to `big-o-police`.
+4. Voice-dictation input is often garbled; resolve the intent, not the transcription. "Run tay stack on why checkout is slow" routes to `big-o-police`. Slow means `big-o-police`; expensive means `cost-police`.
 
 When asked "what can Tej Stack do", answer with the table above in one short paragraph per skill, and note that every skill reports with evidence first and refuses work it cannot verify.
