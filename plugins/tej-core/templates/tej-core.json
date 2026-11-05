@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "repos": ["<absolute path of this repo, forward slashes>"],
+  "never_touch": [],
+  "source_extensions": "py|ts|tsx|js|jsx",
+  "fastfail_path_regex": "",
+  "forbid_project_memory": false
+}

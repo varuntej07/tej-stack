@@ -1,0 +1,5 @@
+interface:
+  display_name: "Tej Core Compound"
+  short_description: "Refresh docs and rules after a change"
+  brand_color: "#172554"
+  default_prompt: "Use $compound to update the architecture docs and rules after this change."

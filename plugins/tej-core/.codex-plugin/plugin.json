@@ -1,0 +1,28 @@
+{
+  "name": "tej-core",
+  "version": "0.9.0",
+  "description": "A working harness for every repo you open: plans explained like a cofounder would say them, spec-first feature and bugfix loops, a strict evaluator gate, and living architecture docs.",
+  "author": {
+    "name": "Varun Tej",
+    "url": "https://github.com/varuntej07"
+  },
+  "homepage": "https://github.com/varuntej07/tej-stack",
+  "repository": "https://github.com/varuntej07/tej-stack",
+  "license": "MIT",
+  "keywords": ["harness", "workflow", "specs", "architecture-docs", "evaluator", "agent-skills"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Tej Core",
+    "shortDescription": "Your harness in every repo",
+    "longDescription": "Scaffolds a repo with a router CLAUDE.md, rules and living architecture docs, then runs spec-first feature and bugfix loops gated by a strict evaluator. Every plan opens as a plain first-person story before the diagrams.",
+    "developerName": "Varun Tej",
+    "category": "Productivity",
+    "capabilities": ["Analysis"],
+    "websiteURL": "https://github.com/varuntej07/tej-stack",
+    "defaultPrompt": [
+      "Set up tej-core in this repo.",
+      "Plan this feature as a spec before writing code."
+    ],
+    "brandColor": "#172554"
+  }
+}

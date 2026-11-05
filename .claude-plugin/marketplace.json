@@ -12,6 +12,11 @@
       "description": "Practical, evidence-first skills for solo founders building and shipping startups with AI coding agents."
     },
     {
+      "name": "tej-core",
+      "source": "./plugins/tej-core",
+      "description": "Your harness in every repo: plans explained like a cofounder would say them, spec-first feature and bugfix loops, a strict evaluator gate, living architecture docs, and hooks that orient each session and block silent failures."
+    },
+    {
       "name": "speed-dial",
       "source": "./plugins/speed-dial",
       "description": "Say what you want run in plain words and your saved project commands start instantly, without waiting on the model. Powered by Jev, bring your own TypeSafe key."

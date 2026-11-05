@@ -2,6 +2,15 @@
 
 All notable changes to Tej Stack. Versions follow semantic versioning; the current version lives in `VERSION`.
 
+## 0.9.0 (2026-11-04)
+
+- New `tej-core` plugin: a working harness installed once per machine that applies in every repo. A SessionStart hook loads rules that make the agent explain plans like a cofounder talking out loud (the pain, how it works now, the idea, why it works) before the diagrams, explain bugs before touching code, design fixes for the whole class including must-not-fire cases, and only call something fixed when the symptom is observed gone. `~/.claude/tej-core/rules.md` adds your own rules to every session.
+- `/tej-core:init` reads a repo and writes a router `CLAUDE.md`, `.claude/rules/`, traced architecture docs, spec templates and `.context/tej-core.json`, merging with an existing `CLAUDE.md` instead of overwriting it.
+- Skills `feature`, `bugfix`, `search`, `pr`, `release` and `compound`, plus a read-only `evaluator` agent that returns PASSED or REJECTED with file:line reasons.
+- A Stop hook, active only in repos set up with `init`, blocks silent catches, new `*_ENABLED` flags, AI trailers, retries on FastFail paths and specs closed with open boxes, judging only files the session edited.
+- `validate.py` now validates skills and Codex manifests for every plugin in the marketplace.
+- README: one-line Tej Core install for PowerShell, bash and zsh.
+
 ## 0.8.0 (2026-10-15)
 
 - New `cost-police` skill: finds where LLM tokens, metered services (Firebase, serverless, storage, SMS), and infrastructure as code (Terraform, CloudFormation, Pulumi, serverless.yml) waste money, and where one bug or abuser could run up the bill. Prices are fetched live from official pages and cited on every dollar figure. It refuses savings claims without real volume and model downgrades without a quality eval. Ships a standard-library scanner for billed call sites.

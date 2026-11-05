@@ -1,0 +1,5 @@
+interface:
+  display_name: "Tej Core Feature"
+  short_description: "Spec, approve, build and gate a feature"
+  brand_color: "#172554"
+  default_prompt: "Use $feature to plan this feature as a spec before writing code."

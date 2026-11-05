@@ -69,11 +69,24 @@ def validate_plugin() -> None:
         fail("Claude marketplace path must target ./plugins/tej-stack")
 
     for entry in claude_market.get("plugins", [])[1:]:
-        validate_hook_plugin(entry, version)
+        validate_extra_plugin(entry, version)
+
+    claude_names = {entry.get("name") for entry in claude_market.get("plugins", [])}
+    for entry in codex_market.get("plugins", [])[1:]:
+        name = entry.get("name", "")
+        if name not in claude_names:
+            fail(f"Codex marketplace lists {name!r}, which the Claude marketplace does not")
+        if entry.get("source", {}).get("path") != f"./plugins/{name}":
+            fail(f"Codex marketplace path for {name} must target ./plugins/{name}")
+        codex_manifest = load_json(ROOT / "plugins" / name / ".codex-plugin" / "plugin.json")
+        if codex_manifest.get("name") != name or codex_manifest.get("version") != version:
+            fail(f"Codex manifest for {name} must carry its name and version {version}")
+        if codex_manifest.get("skills") != "./skills/":
+            fail(f"wrong skills path in the Codex manifest for {name}")
 
 
-def validate_hook_plugin(entry: dict, version: str) -> None:
-    """A Claude-only plugin that ships hooks instead of skills (speed-dial)."""
+def validate_extra_plugin(entry: dict, version: str) -> None:
+    """Any plugin after tej-stack: ships hooks (speed-dial), skills, or both (tej-core)."""
     name = entry.get("name", "")
     if not SKILL_NAME.fullmatch(name):
         fail(f"invalid plugin name in Claude marketplace: {name!r}")
@@ -89,7 +102,14 @@ def validate_hook_plugin(entry: dict, version: str) -> None:
     if not manifest.get("description") or not manifest.get("author", {}).get("name"):
         fail(f"incomplete metadata in {manifest_path.relative_to(ROOT)}")
 
+    has_skills = (plugin / "skills").is_dir()
+    if has_skills and manifest.get("skills") != "./skills/":
+        fail(f"wrong skills path in {manifest_path.relative_to(ROOT)}")
     hooks_path = plugin / "hooks" / "hooks.json"
+    if not hooks_path.is_file():
+        if not has_skills:
+            fail(f"plugin {name} ships neither skills nor hooks")
+        return
     hooks = load_json(hooks_path).get("hooks")
     if not isinstance(hooks, dict) or not hooks:
         fail(f"no hooks declared in {hooks_path.relative_to(ROOT)}")
@@ -101,8 +121,8 @@ def validate_hook_plugin(entry: dict, version: str) -> None:
                         fail(f"hook in {name} points at a missing file: {relative}")
 
 
-def validate_skills() -> int:
-    skills_dir = PLUGIN / "skills"
+def validate_skills(plugin: Path, eval_dir: Path) -> int:
+    skills_dir = plugin / "skills"
     skill_dirs = sorted(path for path in skills_dir.iterdir() if path.is_dir())
     if not skill_dirs:
         fail("no skills found")
@@ -123,7 +143,7 @@ def validate_skills() -> int:
             fail(f"placeholder found in {skill_file.relative_to(ROOT)}")
         for relative in re.findall(r"\]\((?!https?://|#)([^)]+)\)", text):
             target = (skill_file.parent / relative).resolve()
-            if not target.is_file() or PLUGIN.resolve() not in target.parents:
+            if not target.is_file() or plugin.resolve() not in target.parents:
                 fail(f"broken or escaping link in {skill_file.relative_to(ROOT)}: {relative}")
 
         openai_yaml = skill_dir / "agents" / "openai.yaml"
@@ -133,7 +153,7 @@ def validate_skills() -> int:
         if icon_match and not (skill_dir / icon_match.group(1)).resolve().is_file():
             fail(f"missing icon for {skill_dir.name}: {icon_match.group(1)}")
 
-        eval_file = ROOT / "evals" / f"{skill_dir.name}.md"
+        eval_file = eval_dir / f"{skill_dir.name}.md"
         if not eval_file.is_file():
             fail(f"missing evaluation file for {skill_dir.name}")
 
@@ -142,9 +162,13 @@ def validate_skills() -> int:
 
 def main() -> None:
     validate_plugin()
-    count = validate_skills()
-    hook_plugins = len(load_json(ROOT / ".claude-plugin" / "marketplace.json").get("plugins", [])) - 1
-    print(f"Tej Stack is valid: {count} skills, {2 + hook_plugins} plugin manifests, 2 marketplaces")
+    count = validate_skills(PLUGIN, ROOT / "evals")
+    extra = [entry["name"] for entry in load_json(ROOT / ".claude-plugin" / "marketplace.json").get("plugins", [])[1:]]
+    for name in extra:
+        if (ROOT / "plugins" / name / "skills").is_dir():
+            count += validate_skills(ROOT / "plugins" / name, ROOT / "evals" / name)
+    manifests = sum(1 for path in (ROOT / "plugins").glob("*/.*-plugin/plugin.json"))
+    print(f"Tej Stack is valid: {count} skills, {manifests} plugin manifests, 2 marketplaces")
 
 
 if __name__ == "__main__":

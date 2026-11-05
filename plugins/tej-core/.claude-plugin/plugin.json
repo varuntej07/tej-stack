@@ -1,0 +1,14 @@
+{
+  "name": "tej-core",
+  "version": "0.9.0",
+  "description": "A working harness for every repo you open: plans explained like a cofounder would say them, spec-first /feature and /bugfix loops, a strict evaluator gate, living architecture docs, and hooks that orient each session and block silent failures.",
+  "author": {
+    "name": "Varun Tej",
+    "url": "https://github.com/varuntej07"
+  },
+  "homepage": "https://github.com/varuntej07/tej-stack",
+  "repository": "https://github.com/varuntej07/tej-stack",
+  "license": "MIT",
+  "keywords": ["harness", "workflow", "specs", "architecture-docs", "evaluator", "hooks", "agent-skills"],
+  "skills": "./skills/"
+}

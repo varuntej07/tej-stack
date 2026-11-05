@@ -1,0 +1,5 @@
+interface:
+  display_name: "Tej Core Release"
+  short_description: "Release preflight scorecard before any deploy"
+  brand_color: "#172554"
+  default_prompt: "Use $release to check whether this is ready to ship."

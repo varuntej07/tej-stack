@@ -1,0 +1,5 @@
+interface:
+  display_name: "Tej Core Init"
+  short_description: "Set up the tej-core harness in this repo"
+  brand_color: "#172554"
+  default_prompt: "Use $init to set up tej-core in this repo."

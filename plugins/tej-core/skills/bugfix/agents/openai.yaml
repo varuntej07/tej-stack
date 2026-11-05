@@ -1,0 +1,5 @@
+interface:
+  display_name: "Tej Core Bugfix"
+  short_description: "Fix a bug at its root for the whole class"
+  brand_color: "#172554"
+  default_prompt: "Use $bugfix to find the root cause of this bug and explain it before fixing."

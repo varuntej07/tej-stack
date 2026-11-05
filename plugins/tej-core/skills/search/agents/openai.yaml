@@ -1,0 +1,5 @@
+interface:
+  display_name: "Tej Core Search"
+  short_description: "Read-only call graph and resilience audit"
+  brand_color: "#172554"
+  default_prompt: "Use $search to trace how this path works end to end."

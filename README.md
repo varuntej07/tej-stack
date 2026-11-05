@@ -13,6 +13,91 @@ Built for solo founders shipping with Claude Code and Codex. Plain Markdown skil
 
 <!-- Hero: put an x-ray demo GIF or a link to a hosted x-ray page here. A real visual sells this repo faster than any sentence. -->
 
+This marketplace ships two things you can install separately:
+
+- **[Tej Core](#tej-core-your-harness-in-every-repo)**: a working harness that follows you into every repo you open.
+- **[Tej Stack skills](#install-in-30-seconds)**: evidence-first audits you call when you need one.
+
+## Tej Core: your harness in every repo
+
+Every time you open a new repo, your agent starts from zero. It doesn't know how you like plans explained, it jumps straight to code, it calls a bug fixed because the code compiles, and next week it has forgotten how the system works. Tej Core fixes that once for every repo on your machine.
+
+**Install it once. It works in every repo from then on.** Paste this into any terminal (PowerShell, bash or zsh), then restart Claude Code:
+
+```text
+claude plugin marketplace add varuntej07/tej-stack; claude plugin marketplace update tej-stack; claude plugin install tej-core@tej-stack
+```
+
+That's the whole install. It installs at user scope, so it isn't tied to one project. If you already added this marketplace, the first command says so and the next two still run.
+
+<details>
+<summary><b>Other ways to install</b></summary>
+
+**Inside Claude Code**, type these one at a time:
+
+```text
+/plugin marketplace add varuntej07/tej-stack
+/plugin marketplace update tej-stack
+/plugin install tej-core@tej-stack
+/reload-plugins
+```
+
+**Or let Claude do it.** Paste this into Claude Code:
+
+> Install Tej Core for me: run `claude plugin marketplace add varuntej07/tej-stack`, then `claude plugin marketplace update tej-stack`, then `claude plugin install tej-core@tej-stack`. When they succeed, tell me to restart Claude Code and run `/tej-core:init` in my repo.
+
+**Codex** (the skills; Codex does not run Claude Code hooks, so `init` also writes an `AGENTS.md` that carries the rules):
+
+```text
+codex plugin marketplace add varuntej07/tej-stack
+codex plugin add tej-core@tej-stack
+```
+
+</details>
+
+**Then, in each repo you work on, run this once:**
+
+```text
+/tej-core:init
+```
+
+It reads your code and writes a router `CLAUDE.md`, rules under `.claude/rules/`, one architecture doc per subsystem it traces, and spec templates under `.context/`. If you already have a `CLAUDE.md`, it keeps every line, shows you the merge and waits for your OK. Nothing gets committed.
+
+### What you get
+
+| Where | What happens |
+| --- | --- |
+| **Every session, every repo** | Your agent explains plans like a cofounder talking out loud: the pain, how it works now, what it wants to do and why, then the diagrams. It explains a bug before touching code, fixes the whole class instead of one example, and only says "fixed" once the symptom is gone. |
+| **Repos you ran `init` in** | Each session opens with the repo map and your active specs. At the end of every turn a check blocks silent `catch {}` / `except: pass`, new `*_ENABLED` flags, AI trailers, and specs marked done with open boxes. It only judges files this session edited, never work you already had in progress. |
+| `/tej-core:feature` | Reads the docs and code, writes a spec (taxonomy with must-not-fire cases, ASCII diagram, data flow, latency budget, resilience matrix), **stops for your approval**, builds, then loops the evaluator until it passes. |
+| `/tej-core:bugfix` | Evidence first, the full class of the bug, an explanation before any diff, a root-cause fix, the evaluator gate. |
+| `/tej-core:search` | Read-only: answer first, then the call graph, the latency and storage audit, resilience gaps, and where the docs have drifted from the code. |
+| `/tej-core:pr` | Evaluator plus duplication review, commit hygiene, and a PR description drafted to the scratchpad. Never pushes. |
+| `/tej-core:release` | A pass/fail scorecard across every repo in scope. Asks before any build, tag, push or deploy. |
+| `/tej-core:compound` | After a change: updates the architecture docs, turns new failure modes into rules, archives finished specs. |
+| `tej-core:evaluator` agent | A strict, read-only reviewer that returns PASSED or REJECTED with file:line reasons. |
+
+### How it works
+
+```text
+claude plugin install tej-core@tej-stack        (once per machine, user scope)
+        │
+        ▼
+every session ──► SessionStart hook ──► tej-core rules (+ ~/.claude/tej-core/rules.md, if you write one)
+        │                          └──► repo set up? ──► repo map + active specs
+        ▼
+/tej-core:init ──► CLAUDE.md router · .claude/rules/ · .context/1-docs (ARCH docs)
+                   .context/2-specs (templates) · .context/tej-core.json · AGENTS.md
+        ▼
+end of turn ──► Stop hook ──► only in set-up repos, only this session's edits
+```
+
+**Your own rules everywhere.** Put anything you want every session to know in `~/.claude/tej-core/rules.md` (your shell, commit style, words you never want used). The SessionStart hook loads it next to the Tej Core rules in every repo.
+
+**Repo-specific steps** (test commands, evals, log locations, deploy targets) live in that repo's `.claude/rules/project-workflow.md`, which `init` fills from your manifests and CI. The skills read it, so they never guess.
+
+The hooks need `bash` (on Windows, the Git for Windows that Claude Code already uses). If anything is missing, they skip quietly and never break a session.
+
 ## Install in 30 seconds
 
 **Claude Code.** Type these inside Claude Code:
@@ -244,6 +329,7 @@ Each skill checks for a newer Tej Stack at most once a day: one 3-second request
 
 ```text
 /plugin update tej-stack@tej-stack
+/plugin update tej-core@tej-stack
 ```
 
 Direct installs update by re-running the installer with `--update` (Unix) or `-Update` (Windows). See [CHANGELOG.md](CHANGELOG.md) for what changed.
@@ -252,8 +338,11 @@ Direct installs update by re-running the installer with `--update` (Unix) or `-U
 
 ```text
 claude plugin uninstall tej-stack@tej-stack
+claude plugin uninstall tej-core@tej-stack
 claude plugin marketplace remove tej-stack
 ```
+
+Removing Tej Core leaves the files `init` wrote in your repos (`CLAUDE.md`, `.claude/rules/`, `.context/`). They are plain Markdown and stay useful on their own; delete them by hand if you want them gone.
 
 Direct installs: delete the skill folders the installer printed, under `~/.claude/skills/` or `~/.codex/skills/` (or `.claude/skills/` and `.agents/skills/` in a project).
 

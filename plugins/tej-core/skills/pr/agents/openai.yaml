@@ -1,0 +1,5 @@
+interface:
+  display_name: "Tej Core PR"
+  short_description: "Gate the branch and draft a PR description"
+  brand_color: "#172554"
+  default_prompt: "Use $pr to check this branch and draft the PR description."
