@@ -1,6 +1,6 @@
 {
   "name": "tej-core",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "A working harness for every repo you open: plans explained like a cofounder would say them, spec-first feature and bugfix loops, a strict evaluator gate, and living architecture docs.",
   "author": {
     "name": "Varun Tej",

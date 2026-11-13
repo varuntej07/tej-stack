@@ -2,6 +2,12 @@
 
 All notable changes to Tej Stack. Versions follow semantic versioning; the current version lives in `VERSION`.
 
+## 0.10.0 (2026-11-12)
+
+- New `/tej-core:spotlight` skill: SEO and AEO end to end. It builds a claims ledger from shipped code, probes the live site per crawler user-agent, ranks findings in citation-chain order (positioning drift, per-page metadata, freshness, structure, missing pages), writes a plan in the cofounder voice and stops for approval, then fixes the class and ships a freshness loop with truthful sitemap dates and IndexNow. `spotlight recheck` reruns the probe and the frozen prompt set later. Built after surveying the public SEO and AEO skill packs; what was taken and refused is in its `references/sources.md`.
+- Spotlight shares get-cited's evidence files, and `validate.py` fails if the copies drift.
+- The `tej` router sends "fix our SEO and AEO" to spotlight and keeps audit-only requests on get-cited.
+
 ## 0.9.0 (2026-11-04)
 
 - New `tej-core` plugin: a working harness installed once per machine that applies in every repo. A SessionStart hook loads rules that make the agent explain plans like a cofounder talking out loud (the pain, how it works now, the idea, why it works) before the diagrams, explain bugs before touching code, design fixes for the whole class including must-not-fire cases, and only call something fixed when the symptom is observed gone. `~/.claude/tej-core/rules.md` adds your own rules to every session.

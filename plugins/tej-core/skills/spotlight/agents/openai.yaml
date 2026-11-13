@@ -1,0 +1,5 @@
+interface:
+  display_name: "Tej Core Spotlight"
+  short_description: "SEO and AEO plan, then fixes, so search and AI find you"
+  brand_color: "#172554"
+  default_prompt: "Use $spotlight to get this site found on Google and cited by AI answers."

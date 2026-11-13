@@ -121,6 +121,23 @@ def validate_extra_plugin(entry: dict, version: str) -> None:
                         fail(f"hook in {name} points at a missing file: {relative}")
 
 
+# Reference files one skill shares with another, kept byte-identical so the evidence cannot drift.
+SHARED_REFERENCES = (
+    ("plugins/tej-core/skills/spotlight/references", "plugins/tej-stack/skills/get-cited/references",
+     ("engine-matrix.md", "content-patterns.md", "measurement.md", "myths.md", "schema-playbook.md")),
+)
+
+
+def validate_shared_references() -> None:
+    for copy_dir, source_dir, names in SHARED_REFERENCES:
+        for name in names:
+            copy, source = ROOT / copy_dir / name, ROOT / source_dir / name
+            if not copy.is_file() or not source.is_file():
+                fail(f"missing shared reference {name} in {copy_dir} or {source_dir}")
+            if copy.read_bytes() != source.read_bytes():
+                fail(f"shared reference drifted: {copy_dir}/{name} differs from {source_dir}/{name}")
+
+
 def validate_skills(plugin: Path, eval_dir: Path) -> int:
     skills_dir = plugin / "skills"
     skill_dirs = sorted(path for path in skills_dir.iterdir() if path.is_dir())
@@ -167,6 +184,7 @@ def main() -> None:
     for name in extra:
         if (ROOT / "plugins" / name / "skills").is_dir():
             count += validate_skills(ROOT / "plugins" / name, ROOT / "evals" / name)
+    validate_shared_references()
     manifests = sum(1 for path in (ROOT / "plugins").glob("*/.*-plugin/plugin.json"))
     print(f"Tej Stack is valid: {count} skills, {manifests} plugin manifests, 2 marketplaces")
 

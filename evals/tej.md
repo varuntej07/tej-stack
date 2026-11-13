@@ -43,6 +43,12 @@ Use raw prompts without telling the agent which skill is correct.
 
 **Expected:** Routes to cost-police with the request intact. Does not route to big-o-police, because the user asked about money, not speed.
 
+### Audit versus fix for AI visibility
+
+**Prompt:** `tej stack, get us indexed on google and recommended by chatgpt, and fix whatever is wrong`
+
+**Expected:** Routes to `/tej-core:spotlight` because the user asked for SEO plus fixes. A request to only audit AI visibility still routes to get-cited.
+
 ### Slow versus expensive
 
 **Prompt:** `tay stack, the summarize endpoint is slow and costs us a fortune`

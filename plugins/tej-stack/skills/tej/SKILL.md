@@ -1,6 +1,6 @@
 ---
 name: tej
-description: Router for the Tej Stack skill suite. Use when the user invokes Tej Stack without naming a specific skill, or asks which Tej Stack skill fits a task. Triggers on tej, tej stack, tejstack, use tej, run tej stack on this, and speech-to-text aliases like tay stack, taj stack, tedge stack, tage stack, or tej stack. Routes feature audits to walkie-talkie, failure explanations to trace-failure, duplication sweeps to abstraction-police, performance hunts to big-o-police, AI answer-engine visibility work to get-cited, requests to map or diagram a flow, architecture, or concept to x-ray, API bills, token spend, surprise cloud bills, and infrastructure cost to cost-police, and app promo videos, ads, and store preview videos to promo-reel, then hands off to that skill rather than doing the work itself.
+description: Router for the Tej Stack skill suite. Use when the user invokes Tej Stack without naming a specific skill, or asks which Tej Stack skill fits a task. Triggers on tej, tej stack, tejstack, use tej, run tej stack on this, and speech-to-text aliases like tay stack, taj stack, tedge stack, tage stack, or tej stack. Routes feature audits to walkie-talkie, failure explanations to trace-failure, duplication sweeps to abstraction-police, performance hunts to big-o-police, AI answer-engine visibility audits to get-cited (and requests to fix SEO and AEO end to end to tej-core spotlight), requests to map or diagram a flow, architecture, or concept to x-ray, API bills, token spend, surprise cloud bills, and infrastructure cost to cost-police, and app promo videos, ads, and store preview videos to promo-reel, then hands off to that skill rather than doing the work itself.
 ---
 
 # Tej
@@ -18,6 +18,7 @@ Send the request to the right Tej Stack skill and hand off. Do not perform the u
 | Duplicated code, drifted copies, repetitive-feeling modules, whether to merge or inline an abstraction | `abstraction-police` |
 | Slowness, memory, scale degradation, data-structure or algorithm choices | `big-o-police` |
 | Showing up in ChatGPT, Perplexity, Claude, Copilot, or Google AI answers; AEO, GEO, AI SEO, llms.txt, schema for AI | `get-cited` |
+| Fixing it end to end: SEO and AEO together, getting indexed and kept fresh on Google and Bing, honest alternatives pages, shipping the changes after a plan | `/tej-core:spotlight` (tej-core plugin; if it is not installed, run `get-cited` and say spotlight ships the fixes) |
 | Seeing how a file, repo flow, architecture, or concept works as a clickable block diagram; "x-ray this", "map this", "diagram this flow" | `x-ray` |
 | Money: an API or LLM bill that is too high, token spend, cost per user, a surprise Firebase or AWS bill, whether a bug or abuser could run up the bill, Terraform or infrastructure cost | `cost-police` |
 | A short promo video of the user's app: social ad, launch clip, App Store or Play preview video, landing-page hero loop | `promo-reel` |

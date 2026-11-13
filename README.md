@@ -74,6 +74,7 @@ It reads your code and writes a router `CLAUDE.md`, rules under `.claude/rules/`
 | `/tej-core:search` | Read-only: answer first, then the call graph, the latency and storage audit, resilience gaps, and where the docs have drifted from the code. |
 | `/tej-core:pr` | Evaluator plus duplication review, commit hygiene, and a PR description drafted to the scratchpad. Never pushes. |
 | `/tej-core:release` | A pass/fail scorecard across every repo in scope. Asks before any build, tag, push or deploy. |
+| `/tej-core:spotlight` | SEO and AEO in one pass: probes your live site the way Googlebot and GPTBot see it, ranks what keeps you out of Google and AI answers, plans honest alternatives and use-case pages, **stops for your approval**, then ships the fixes and a freshness loop (truthful sitemap dates, IndexNow). `spotlight recheck` reruns it later. |
 | `/tej-core:compound` | After a change: updates the architecture docs, turns new failure modes into rules, archives finished specs. |
 | `tej-core:evaluator` agent | A strict, read-only reviewer that returns PASSED or REJECTED with file:line reasons. |
 
