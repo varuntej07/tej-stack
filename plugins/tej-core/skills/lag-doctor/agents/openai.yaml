@@ -1,0 +1,5 @@
+interface:
+  display_name: "Tej Core Lag Doctor"
+  short_description: "Measure real-time LLM latency, plan doc-backed fixes"
+  brand_color: "#172554"
+  default_prompt: "Use $lag-doctor to measure p50, p95 and p99 of every real-time LLM call and plan the fixes."
