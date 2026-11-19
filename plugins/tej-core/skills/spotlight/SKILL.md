@@ -101,15 +101,21 @@ repo, run the evaluator agent until PASSED. Then:
   script) and list the console steps only the user can do.
 - Update the repo's SEO or AEO doc so the next run starts from receipts, and save the
   prompt-probe set there as the baseline.
+- Write `.context/spotlight.json` as `{"last_run": "<YYYY-MM-DD>", "site": "<live URL>",
+  "recheck_days": 30}`, one key per line. tej-core's session-start hook reads it in every
+  session and reminds the user once the recheck is due. Keep `recheck_days` if the user set it.
 - Report what changed, each check's before and after, and anything left unverified. Never
   commit, push or deploy without the user asking in the current message.
 
 ## 7. Recheck
 
+The user is reminded automatically: once `last_run` in `.context/spotlight.json` is older
+than `recheck_days`, the session-start hook tells the agent to offer a recheck.
 `spotlight recheck` re-runs section 2 against the live site, diffs it against the last plan,
 re-runs the prompt-probe set, and reports what moved, what did not, and new drift (pages added
 without metadata, stale lastmod, claims that left the ledger). Citations and rankings move on
 recrawl timescales: report weeks, never hours, and never claim a win from a single probe run.
+Finish by updating `last_run` in `.context/spotlight.json` to today, which resets the reminder.
 
 ## Refusal rules, hard
 

@@ -21,6 +21,16 @@ A direct factual question still gets the answer (the number) first.
 
 ## How to work
 
+- **tej-core routes first.** Building, adding or planning a feature goes through
+  `/tej-core:feature`; a bug, regression or wrong behavior through `/tej-core:bugfix`; "how does
+  this work" through `/tej-core:search`; a PR through `/tej-core:pr`; a release through
+  `/tej-core:release`. Other skill packs (gstack and the like) are secondary: use them inside a
+  tej-core flow for a sub-step (diagnosis, browsing, QA), never in place of it.
+- **Every source edit ends with an evaluator PASS.** Work that started in plain chat or plan mode
+  writes its `SPEC-`/`BUG-*.md` in `.context/2-specs/` before the first edit. After the last
+  edit, run the `tej-core:evaluator` agent with that spec until it returns PASSED, then write the
+  spec's path as the first line of `.context/4-scratchpad/.evaluator-passed`. Any edit after that
+  needs a fresh PASS. The Stop hook blocks a turn that skips this.
 - **Explain before fixing.** Investigate read-only, confirm the cause on real objects, tell the
   story above, then the root cause with file:line, why it is wrong as a class, and the fix. Wait
   for approval before the diff.

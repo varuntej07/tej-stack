@@ -43,6 +43,13 @@ def validate_plugin() -> None:
     if not SEMVER.fullmatch(version):
         fail("VERSION must use strict semantic versioning")
 
+    changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    latest = re.search(r"^## (\d+\.\d+\.\d+)", changelog, re.MULTILINE)
+    if not latest:
+        fail("CHANGELOG.md has no '## x.y.z' entry")
+    if latest.group(1) != version:
+        fail(f"newest CHANGELOG.md entry is {latest.group(1)} but VERSION is {version}; every change that ships needs a release")
+
     for manifest_path in (
         PLUGIN / ".codex-plugin" / "plugin.json",
         PLUGIN / ".claude-plugin" / "plugin.json",

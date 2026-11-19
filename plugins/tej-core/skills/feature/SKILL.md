@@ -49,6 +49,7 @@ in.
     user before anything long-running, paid or launching.
 12. Invoke the `tej-core:evaluator` agent with the spec path and the recorded command output. Fix
     every required item and re-run it until it returns PASSED. Do not argue with a FAIL; satisfy
-    it or show the user why the rule does not apply.
+    it or show the user why the rule does not apply. On PASSED, write the spec path as the first
+   line of `.context/4-scratchpad/.evaluator-passed`; any later edit needs a fresh PASS.
 13. Tick the acceptance boxes that are truly met, update the ARCH docs, set `status: closing`,
     then run `/tej-core:compound`. Never commit or push without the user's word.

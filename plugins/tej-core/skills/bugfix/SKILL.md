@@ -34,7 +34,8 @@ one line and offer `/tej-core:init` first.
 6. Run the existing suites for touched files and any eval `project-workflow.md` lists. Ask the
    user before builds or launches; the user verifies GUI behavior.
 7. Invoke the `tej-core:evaluator` agent with the BUG spec path and recorded output; loop until
-   PASSED.
+   PASSED, then write the BUG spec path as the first line of
+   `.context/4-scratchpad/.evaluator-passed`; any later edit needs a fresh PASS.
 8. Say "fixed" only when the symptom was observed gone on the real surface; otherwise
    "unverified" and why. Add a lessons-learnt line where `project-workflow.md` keeps them, set
    `status: closing`, run `/tej-core:compound`.

@@ -18,6 +18,33 @@ fi
 
 cd "${CLAUDE_PROJECT_DIR:-.}" 2>/dev/null || exit 0
 root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+
+# Spotlight recheck reminder. /tej-core:spotlight writes .context/spotlight.json
+# ({"last_run": "YYYY-MM-DD", "site": "...", "recheck_days": 30}) after every run,
+# in any repo, set up by init or not. Once the run is older than recheck_days,
+# the agent is told to remind the user once.
+spot="$root/.context/spotlight.json"
+if [ -f "$spot" ]; then
+  last="$(grep -m1 -oE '"last_run"[[:space:]]*:[[:space:]]*"[0-9]{4}-[0-9]{2}-[0-9]{2}"' "$spot" | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}')"
+  every="$(grep -m1 -oE '"recheck_days"[[:space:]]*:[[:space:]]*[0-9]+' "$spot" | grep -oE '[0-9]+$')"
+  site="$(grep -m1 -oE '"site"[[:space:]]*:[[:space:]]*"[^"]*"' "$spot" | cut -d'"' -f4)"
+  [ -n "$every" ] || every=30
+  then_s="$(date -u -d "$last" +%s 2>/dev/null || date -u -j -f %Y-%m-%d "$last" +%s 2>/dev/null)"
+  echo
+  if [ -z "$last" ] || [ -z "$then_s" ]; then
+    echo "tej-core: $spot has no readable \"last_run\" date, so the spotlight recheck reminder is off."
+    echo "  Tell the user once, and fix the file on the next spotlight run."
+  else
+    age=$(( ( $(date -u +%s) - then_s ) / 86400 ))
+    if [ "$age" -ge "$every" ]; then
+      echo "tej-core: spotlight recheck is due for ${site:-this site} (last run $last, $age days ago; every $every days)."
+      echo "  Start your first reply with one line telling the user, and offer to run /tej-core:spotlight recheck."
+      echo "  Say it once per session, never again after they answer."
+    else
+      echo "tej-core: spotlight last ran $last; the next recheck is due in $(( every - age )) days. Do not mention it."
+    fi
+  fi
+fi
 if ! cfg_find "$root"; then
   echo
   echo "tej-core: this repo is not set up yet. Run /tej-core:init when the user wants specs,"

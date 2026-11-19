@@ -2,6 +2,14 @@
 
 All notable changes to Tej Stack. Versions follow semantic versioning; the current version lives in `VERSION`.
 
+## 0.11.0 (2026-11-19)
+
+- New `/tej-core:lag-doctor` skill: inventories every real-time LLM call, measures p50, p95 and p99 per stage from production logs, compares each stage against live official provider docs, asks what bothers you, and writes a concise doc-referenced plan that stops for approval. Model, effort and thinking changes are gated behind a preregistered eval; `lag-doctor recheck` reruns the saved queries after a deploy.
+- The Stop hook now blocks a turn that edited source with no `tej-core:evaluator` PASS after the last edit. After a PASSED, the session writes the spec path to `.context/4-scratchpad/.evaluator-passed`, and any later edit makes it stale. The session rules now route feature, bug, search, PR and release work through tej-core first, with other skill packs such as gstack used only for sub-steps, and work that starts in plain chat writes its spec before the first edit.
+- Spotlight now writes `.context/spotlight.json` with the date of its last run, and the tej-core session-start hook reminds you once a month (or every `recheck_days`) to run `/tej-core:spotlight recheck`, in any repo where spotlight has run.
+- `validate.py` now fails when the newest entry in this changelog does not match `VERSION`. lag-doctor reached the repo on 2026-11-15 without a version bump, so `plugin update` told installed copies they were current and never fetched it; this check stops that from happening again. If you installed 0.10.0 before this release, run `claude plugin uninstall tej-core@tej-stack` and then `claude plugin install tej-core@tej-stack` once.
+- README rewritten around Tej Core: a real `init` session on the Express repo up top, one install command, a before-and-after table, a comparison with gstack, OpenSpec and Spec Kit, and a troubleshooting section. Codex install and update commands sit next to the Claude Code ones. The audit skills and speed-dial moved to `docs/skills.md` and `docs/speed-dial.md`.
+
 ## 0.10.0 (2026-11-12)
 
 - New `/tej-core:spotlight` skill: SEO and AEO end to end. It builds a claims ledger from shipped code, probes the live site per crawler user-agent, ranks findings in citation-chain order (positioning drift, per-page metadata, freshness, structure, missing pages), writes a plan in the cofounder voice and stops for approval, then fixes the class and ships a freshness loop with truthful sitemap dates and IndexNow. `spotlight recheck` reruns the probe and the frozen prompt set later. Built after surveying the public SEO and AEO skill packs; what was taken and refused is in its `references/sources.md`.

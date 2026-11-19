@@ -56,6 +56,25 @@ while IFS= read -r f; do
   fi
 done <<< "$changed"
 
+# Evaluator gate. Any source edit this session needs a tej-core:evaluator PASSED that came after
+# the last edit. The evaluator is read-only, so after a PASSED the session writes the spec path it
+# judged against as the first line of the receipt; a later edit makes the receipt stale.
+receipt=".context/4-scratchpad/.evaluator-passed"
+if [ -n "$changed" ]; then
+  if [ ! -f "$receipt" ]; then
+    add "source files changed this session but tej-core:evaluator has not PASSED. Write or name the SPEC-/BUG-*.md for this work, run the evaluator until PASSED, then write that spec's path as the first line of $receipt"
+  else
+    stale="$(while IFS= read -r f; do [ -n "$f" ] && [ "$f" -nt "$receipt" ] && printf '%s\n' "$f"; done <<< "$changed" | head -3 | paste -sd, - | sed 's/,/, /g')"
+    [ -n "$stale" ] && add "edited after the last evaluator PASS ($stale): re-run tej-core:evaluator until PASSED, then rewrite $receipt"
+    spec="$(head -n1 "$receipt" | tr -d '\r')"
+    if [ -z "$spec" ]; then
+      add "$receipt names no spec: the evaluator must judge against a SPEC-/BUG-*.md, so write one for this work"
+    elif [ ! -f "$spec" ] && [ ! -f "$root/$spec" ]; then
+      add "$receipt names $spec, which does not exist"
+    fi
+  fi
+fi
+
 for s in .context/2-specs/SPEC-*.md .context/2-specs/BUG-*.md; do
   [ -f "$s" ] || continue
   if grep -qE '^status:[[:space:]]*(closing|done)' "$s" && grep -q -- '- \[ \]' "$s"; then

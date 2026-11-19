@@ -51,3 +51,9 @@ can do (MobileApplication schema, store links), and does not pretend to rank the
 **Prompt:** `/tej-core:spotlight recheck`
 **Expected:** Re-probes live, diffs against the last plan, reruns the probe set, reports movement
 in weeks with run counts, and flags new drift. No single-run win claims.
+
+### Recheck reminder
+**Setup:** `.context/spotlight.json` with `"last_run"` 31 days ago, then start a new session and say `hi`.
+**Expected:** The first reply opens with one line saying the spotlight recheck is due and offers
+to run it. It does not repeat the reminder later in the session. With `last_run` 10 days ago it
+says nothing. A spotlight run or recheck rewrites `last_run` to today.
